@@ -1,0 +1,1913 @@
+#!/usr/bin/perl
+#
+## Copyright © 2002-2014, 2018 Apple Inc. All Rights Reserved.
+##
+## IMPORTANT NOTE: This file is licensed only for use on Apple-branded
+## computers and is subject to the terms and conditions of the Apple Software
+## License Agreement accompanying the package this file is a part of.
+## You may not port this file to another platform without Apple's written consent.
+#
+
+sub Usage1
+{
+    qq{
+kickstart -- Quickly uninstall, install, activate, configure, and/or restart
+             components of Apple Remote Desktop without a reboot.
+
+kickstart -uninstall -files -settings -prefs
+
+          -install -package <path>
+
+          -deactivate
+          -activate
+
+          -configure -users <user1,user2...> 
+            -access -on  -off 
+            -privs  -all -none
+                    -DeleteFiles                                                                     
+                    -ControlObserve                                                                 
+                    -TextMessages                                                                   
+                    -ShowObserve                                                                     
+                    -OpenQuitApps                                                                    
+                    -GenerateReports                                                                 
+                    -RestartShutDown                                                                 
+                    -SendFiles                                                                            
+                    -ChangeSettings                                                                  
+                    -ObserveOnly    
+                    -mask <mask>
+
+            -allowAccessFor
+                    -allUsers [-privs <priv options>]
+                    -specifiedUsers
+            
+            -computerinfo -set1 -1 <text> 
+                          -set2 -2 <text> 
+                          -set3 -3 <text> 
+                          -set4 -4 <text>
+
+            -clientopts
+              -setmenuextra -menuextra  yes
+              -setdirlogins -dirlogins  yes
+              -setreqperm   -reqperm    no
+              -setvnclegacy -vnclegacy  yes
+              -setvncpw     -vncpw      mynewpw
+              -setwbem      -wbem       no
+
+          -stop
+
+          -restart -agent -console -menu
+
+          -targetdisk <mountpoint>
+          
+
+          -verbose
+          -quiet
+
+          -help     ## Show verbose documentation
+
+Examples:
+
+- Uninstall program files (but not preferences and settings), install the given package, and then restart the service.
+  kickstart -uninstall -files -install -package RD_Admin_Install.pkg -restart -console
+
+- Install the given package and then restart the ARD agent.
+  kickstart -install -package RD_Client_Install.pkg -restart -agent
+
+- On 10.4 and earlier, stop the Remote Management service but, if activated, it will start after the next computer restart.
+- On 10.5 and later, use kickstart -deactivate instead.
+  kickstart -stop
+
+- Stop the Remote Management service and deactivate it so it will not start after the next computer restart.
+  kickstart -deactivate -stop 
+
+- Restart the agent.
+  kickstart -restart -agent -console
+
+- Activate the Remote Management service and then restart the agent.
+  kickstart -activate -restart -agent -console
+
+- Activate the Remote Management service, enable access, and restart the agent.
+  kickstart -activate -configure -access -on -restart -agent
+
+- Disable user access.
+  kickstart -configure -access -off
+
+- Give admin and bob all access.
+  kickstart -configure -access -on -privs -all -users admin,bob
+
+- Use Directory Server accounts for authentication. Users must be a member of one of the ARD directory groups to authenticate.
+  kickstart -configure -clientopts -setdirlogins -dirlogins yes
+
+- Disable the Remote Management menu extra.
+  kickstart -configure -clientopts -setmenuextra -menuextra no
+
+The following examples are only for OS X 10.5 and later.
+
+- Allow access for only these users (the users must be specified in a separate command).
+  kickstart -configure -allowAccessFor -specifiedUsers
+
+- Allow access for all users and give all users full access.
+  kickstart -configure -allowAccessFor -allUsers -privs -all
+
+- Start the Remote Management service.
+  kickstart -activate
+
+Version 0.9
+
+};} sub Usage2{qq{
+    
+RUNNING FROM THE COMMAND LINE
+
+This script can be run like any UNIX tool from the command line or
+called from another script.
+
+Before starting:
+
+- Use this script at your own risk.  Read it first and understand it.
+
+- Log in as an administrator (you must have sudo privileges)
+
+- Copy this script to any location you like (such as /usr/bin/local/)
+
+- Ensure this file has Unix line endings, or it won't run.
+
+
+Running:
+
+- Run the script using "sudo" (enter your password if prompted)
+
+      sudo ./kickstart -restart -agent
+
+
+Command-line switches:
+
+The optional "parent" switches activate the top level kickstart features:
+
+-uninstall
+-install
+-deactivate 
+-activate 
+-configure 
+-stop
+-restart
+
+These features can be selected independently, but will always be done
+in the order shown above.
+
+For anything interesting to happen, you *must* specify one or more of
+the parent options, plus one or more child options for those that
+require them.  Child options will be ignored unless their parent
+option is also supplied.
+
+All options are switches (they take no arguments), except for -package
+<path> -users <userlist> and -mask <number>, as noted below.
+
+
+-uninstall  ## Enable the "uninstall" options:
+
+  -files    ## Uninstall all ARD-related files
+  -settings ## Remove access privileges in System Preferences
+  -prefs    ## Remove Remote Desktop administrator preferences
+
+
+-install    ## Enable the "install" options:
+
+  -package path ## Specify the path to an installer package to run
+
+
+-configure  ## Enable the "configure" options:
+
+  -users john,admin ## Specify users to set privs or access (default is all users)
+
+  -activate ## Activate ARD agent in Sys Prefs to run at startup
+
+  -deactivate ## Deactivate ARD agent in Sys Prefs to run at startup
+
+  -access   ## Set access for users: 
+    -on     ## Grant access
+    -off    ## Deny  access
+
+  -privs    ## Set the user's access privileges:
+    -none               ## Disable all privileges for specified user
+    -all                ## Grant all privileges (default)...
+                        ## ... or grant any these privileges...
+    -DeleteFiles        ##
+    -ControlObserve     ## Control AND observe (unless ObserveOnly is also specified)
+    -TextMessages       ## Send a text message
+    -ShowObserve        ## Show client when being observed or controlled
+    -OpenQuitApps       ## Open and quit aplicationns
+    -GenerateReports    ## Generate reports (and search hard drive)
+    -RestartShutDown    ##
+    -SendFiles          ## Send *and/or* retrieve files
+    -ChangeSettings     ## Change system settings
+    -ObserveOnly        ## Modify ControlObserve option to allow Observe mode only
+
+    -mask number        ## Specify "naprivs" mask numerically instead (advanced)
+
+  -allowAccessFor ## Specify the Remote Management access mode
+    -allUsers       ## Grant access to all local users
+    -specifiedUsers ## Only grant access to users with privileges
+
+  -computerinfo         ## Specify all four computer info fields (default for each is empty)
+     -set1 -1 <text> 
+     -set2 -2 <text> 
+     -set3 -3 <text> 
+     -set4 -4 <text>
+
+  -clientopts           ## Allow specification of several opts.
+     -setmenuextra -menuextra  yes|no        ## Set whether menu extra appears in menu bar
+     -setdirlogins -dirlogins  yes|no        ## Set whether directory logins are allowed
+     -setreqperm   -reqperm    yes|no        ## Allow VNC guests to request permission
+     -setvnclegacy -vnclegacy  yes|no        ## Allow VNC Legacy password mode
+     -setvncpw     -vncpw      mynewpw       ## Set VNC Legacy PW
+     -setwbem      -wbem       yes|no        ## Allow incoming WBEM requests over IP        
+
+-stop       ## Stop the agent and/or console program (N/A if targetdisk is not /)
+
+-restart    ## Enable the "restart" options:         (N/A if targetdisk is not /)
+
+  -agent    ## Restart the ARD Agent and helper
+  -console  ## Restart the console application
+  -menu     ## Restart the menu extra
+
+-targetdisk ## Disk on which to operate, specified as a mountpoint in
+            ## the current filesystem.  Defaults to the current boot volume: "/".
+            ## NOTE: Disables the -restart options (does not affect currently
+            ## running processes).
+
+-verbose    ## Print (non-localizable) output from installer tool (if used)
+-quiet      ## No feedback; just run.
+
+-help       ## Print this extended help message
+
+ARD has four main components:
+
+1) ARD Helper
+2) ARD Agent & associated daemons
+3) ARD Menu Extra    (controlled by the SystemUIServer)
+4) ARD Admin Console (if you have an Administrator license)
+
+
+What this script does:
+
+1) Any running ARD components will be stopped as needed.  For example,
+   they'll be stopped before an uninstall, reinstall, or restart
+   request.  They will not be restarted unless you specify the
+   -restart options.
+
+2) Components will be restarted as required.  For example, restarting
+   the administrator console forces a restart of the agent.
+   Restarting the agent, in turn, forces a restart of the helper.
+
+3) If you -uninstall but don't specify a new installer to run, then
+   the -restart family of switches will be ignored.
+
+4) Options can be specified in any order, but remember that the
+   options are ignored unless their parent options are specified.  For
+   example, -package is ignored unless -install is specified.
+
+
+RUNNING THIS SCRIPT FROM A GUI
+
+You can make yourself a GUI-based kickstarter program to run this
+script if you like.  The options, set in the console, can be conveyed
+via environment variables to this script, per a spec shown in the
+source code for this script (or the traditional way using command-line
+switches).  Be sure the console application runs this script with sudo
+privileges. The console should also specify its own location in the
+APP environment variable, and may specify the location of a
+STRINGS_FILE to use to load string definitions for any localizable
+messages produced by this script.
+
+A GUI console could stay up & running between runs of the script but
+should avoid running multiple instances of this script at the same
+time.
+
+
+
+WARNING
+
+This script can be used to grant very permissive incoming access
+permissions.  Do not use the -activate and -configure features unless
+you know exactly what you're doing.
+
+
+};
+}
+
+## Don't do anything if not running as root.
+if ($> != 0) {die "$0 must be run as root or sudo ($>).\n";}
+
+## Make sure perl will run us setuid by untainting PATH.
+$ENV{PATH} = '';
+
+use strict;
+use IO::File;
+use Foundation;
+
+## These are the official ARD privilege mask definitions.  We define
+## them here and then parse the definitions into a dictionary mapping
+## option names to bitfield masks.
+
+my $PrivsFields = 
+    '
+#define     kPrivSTUserHasAccess    0x80000000
+#define     kPrivSTTextMessages     0x00000001
+#define     kPrivSTControlObserve   0x00000002
+#define     kPrivSTSendFiles    	0x00000004
+#define     kPrivSTDeleteFiles  	0x00000008
+#define     kPrivSTGenerateReports  0x00000010
+#define     kPrivSTOpenQuitApps 	0x00000020
+#define     kPrivSTChangeSettings   0x00000040
+#define     kPrivSTRestartShutDown  0x00000080
+#define     kPrivSTObserveOnly      0x00000100
+#define     kPrivSTShowObserve  	0x40000000
+';
+
+my $AllPrivs;
+my $PrivMasks =  
+{(
+  map {$AllPrivs |= $_; $_} 
+  grep {length} 
+  map {/0x/ && eval || $_} $PrivsFields =~ m{kPrivST(\w+).*?(0x\w+)}g), 
+ (AllPrivs => $AllPrivs,
+  NoPrivs  => 0        )};
+$PrivMasks->{AllPrivs} &= ~$PrivMasks->{ObserveOnly};	## "all" means all on, but "ObserveOnly" is _not_ set.
+
+## use Data::Dumper; die &Dumper($PrivMasks);
+
+## We can process all options from environment variables and/or
+## command-line switches.  This spec gives the mapping.
+
+my $EnvVarsToSwitchesSpec =
+    [(
+	  UNINSTALL               	=>  -uninstall,
+	  UN_FILES                	=>  -files,
+	  UN_SETTINGS              	=>  -settings,
+	  UN_PREFS                	=>  -prefs,
+	  
+	  INSTALL                 	=>  -install,
+	  
+	  IN_PACKAGE              	=> {-package => $ENV{IN_PACKAGE}},
+	  
+	  DEACTIVATE	    		=>  -deactivate,
+	  ACTIVATE	    			=>  -activate,
+
+	  CONFIGURE         		=>  -configure,
+	  CN_USERS	    			=> {-users    => $ENV{CN_USERS}},
+	  CN_ACCESS       			=>  -access,
+	  CN_ON 	      			=>  -on,
+	  CN_OFF    	   			=>  -off,
+	  CN_ALLOWACCESSFOR			=>	-allowaccessfor,
+	  CN_ALLUSERS				=>	-allusers,
+	  CN_SPECIFIEDUSERS			=>	-specifiedusers,
+
+	  CN_PRIVS       			=>  -privs,
+	  CN_ALL	    			=>  -all,
+	  CN_NONE	    			=>  -none,
+	  CN_MASK	    			=> {-mask     => $ENV{CN_MASK}},
+	  
+	  (map {(					## Specific privs such as -ControlObserve, etc.
+			 "CN_PRIV_$_" 		=> "-$_"
+			 )} keys %$PrivMasks),
+	   
+	  CN_COMPINFO   			=>  -computerinfo,
+	  CN_SET1		   			=>  -set1,
+	  CN_SET2   				=>  -set2,
+	  CN_SET3   				=>  -set3,
+	  CN_SET4   				=>  -set4,
+	  CN_CMP_1		   			=>  {-1     => $ENV{CN_CMP_1}},
+	  CN_CMP_2		   			=>  {-2     => $ENV{CN_CMP_2}},
+	  CN_CMP_3		   			=>  {-3     => $ENV{CN_CMP_3}},
+	  CN_CMP_4		   			=>  {-4     => $ENV{CN_CMP_4}},
+
+	  CN_DOCOPTS	   			=>  -docopts,
+	  
+	  DO_SET_ALLOWOC			=>  -setallowoc,
+	  DO_SET_DOCSN				=>  -setdocsn,
+	  DO_SET_DOCSNNAM			=>  -setdocsnnam,
+	  DO_SET_DOCSNORG			=>  -setdocsnorg,
+
+	  DO_ALLOWOC	      	   	=>  {-allowoc     => $ENV{DO_ALLOWOC}},
+	  DO_DOCSN		      	   	=>  {-docsn       => $ENV{DO_DOCSN  }},
+	  DO_DOCSNNAM		      	=>  {-docsnnam    => $ENV{DO_DOCSNNAM}},
+	  DO_DOCSNORG		      	=>  {-docsnorg    => $ENV{DO_DOCSNORG}},
+
+	  CN_CLIENTOPTS   			=>  -clientopts,
+
+	  CO_SET_MENUEXTRA			=>  -setmenuextra,
+	  CO_SET_DIRLOGINS			=>  -setdirlogins,
+	  CO_SET_REQPERM 			=>  -setreqperm  ,
+	  CO_SET_VNCLEGACY			=>  -setvnclegacy,
+	  CO_SET_VNCPW    			=>  -setvncpw    ,
+	  CO_SET_WBEM     			=>  -setwbem     ,
+
+	  CO_MENUEXTRA      	   	=>  {-menuextra     => $ENV{CO_MENUEXTRA}},
+	  CO_DIRLOGINS       	   	=>  {-dirlogins     => $ENV{CO_DIRLOGINS}},
+	  CO_REQPERM 			   	=>  {-reqperm       => $ENV{CO_REQPERM  }},
+	  CO_VNCLEGACY			   	=>  {-vnclegacy     => $ENV{CO_VNCLEGACY}},
+	  CO_VNCPW		    	   	=>  {-vncpw         => $ENV{CO_VNCPW    }},
+	  CO_WBEM	     	   	   	=>  {-wbem          => $ENV{CO_WBEM     }},
+
+	  STOP	        			=>  -stop,
+
+	  RESTART        			=>  -restart,
+	  RE_AGENT       			=>  -agent,
+	  RE_CONSOLE     			=>  -console,
+	  RE_MENU        			=>  -menu,
+	  
+	  KS_TARGETDISK    			=> {-targetdisk => $ENV{KS_TARGETDISK}},
+
+	  KS_VERBOSE     			=>  -verbose,
+	  KS_QUIET       			=>  -quiet,
+	  
+	  KS_HELP        			=>  -help,
+	  
+	)];
+
+my ($EnvSwitches)               = &ParseEnvVarsFromSpec($EnvVarsToSwitchesSpec);
+my ($CmdSwitches, $ExtraArgs)   = &ParseCmdVarsFromSpec($EnvVarsToSwitchesSpec);
+
+## We combine the Cmd & Env switches into $opt hash: Cmds override Envs
+
+my $opt							= {%$CmdSwitches, 
+								   %$EnvSwitches}; 
+
+## use Data::Dumper; print &Dumper([grep {$ENV{$_} == 1} sort keys %ENV], [map {"$_: $opt->{$_}"} sort keys %$opt]);
+
+## Parse specified privileges.
+
+my $SpecifiedPrivs		= do {my $x; 
+							  map {$x |= $PrivMasks->{$_}} 
+							  grep {$opt->{$_} > 0} 
+							  keys %$PrivMasks; $x}    	if $opt->{privs};
+
+## If -privs -all or -none are specified, override any other settings.
+
+$SpecifiedPrivs			=  (($PrivMasks->{AllPrivs     }) & 
+							~$PrivMasks->{UserHasAccess}   )	if $opt->{privs} && $opt->{all};
+$SpecifiedPrivs			=  ( $PrivMasks->{NoPrivs } 	   )	if $opt->{privs} && $opt->{none};
+
+## use Data::Dumper; die &Dumper($SpecifiedPrivs, "0x".uc(unpack("H*", pack("l", $SpecifiedPrivs))), ""  . (unpack("l" , pack("l", $SpecifiedPrivs))));
+							 
+## Make sure we have a targetdisk
+
+my $TargetDisk			= $opt->{targetdisk} || "/";
+$TargetDisk				=~ s{([^/])$ }{$1/}x;			## Ensure trailing slash
+
+my $TargetDiskIsBootVol	= ($TargetDisk eq '/');
+
+my $CurrentState = "";
+
+## If we are post Tiger, we need to use dscl, otherwise we use nicl
+my $serviceCmd = "";
+my $databasePath = "";
+my $UseLaunchd = 1;
+my $RemoteManagementLaunchdFile = "";
+my $ScreenSharingLaunchdFile = "";
+my $isTrustRestricted = 0;
+my $tccStateCommand = '/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/tccstate';
+my $tccStateCommandPresent = (-e $tccStateCommand);
+
+## Determine system version of target drive
+if (`/usr/bin/sw_vers -productVersion` =~ /^(\d*)\.(\d*)/)
+{
+    my $major = $1;
+    my $minor = $2;
+    
+    if ($major < 10 || ($major == 10 && $minor < 11))
+    {
+        die "This version of kickstart requires macOS version 10.11 or later.\n";
+    }
+    
+    # Use >= 10.11 launchd file path.
+    $RemoteManagementLaunchdFile = "/Library/Application Support/Apple/Remote Desktop/RemoteManagement.launchd";
+    
+    if ($major > 10 || $minor >= 14)
+    {
+        $isTrustRestricted = 1;
+    }
+}
+
+my $DSLocalDB = "${TargetDisk}var/db/dslocal/nodes/Default";
+die "Can't locate DSLocal database: $DSLocalDB\n" . Usage1() unless -e $DSLocalDB;
+
+$serviceCmd = "/usr/bin/dscl -f '$DSLocalDB' localonly";
+$databasePath = "/Local/Target/Users";
+
+## Find all the active local users of the system (except common built-in users)
+
+my $FoundUsers = "";
+$FoundUsers	= [map {(m{(\S+)\s+})[0]} `$serviceCmd -list $databasePath`];
+
+my $FoundUsersHash	= {map {($_ => $_)} @$FoundUsers};
+my $AllUsers		= [grep {!m{^(root|nobody|daemon|unknown|smmsp|www|mysql|sshd|lp|sendmail|postfix|eppc|qtss|cyrus|mailman)$ }x} @$FoundUsers ];
+$AllUsers			= [grep {(`$serviceCmd -read "$databasePath/$_" uid` =~ m{(\d+)})[0] > 500} @$AllUsers];
+
+## use Data::Dumper; die &Dumper($AllUsers);
+
+## Split the -users option into a list; if empty, default to all.
+
+$opt->{users}			= [split /[ ,]+/, $opt->{users}];
+$opt->{users}			= (@{$opt->{users}} ? [grep {exists($FoundUsersHash->{$_})} @{$opt->{users}}]: $AllUsers);
+
+## use Data::Dumper; print &Dumper($opt);
+
+## Turn off flags that depend on other flags
+
+## Disable child options in each group if parent switch is not
+## activated or required parameters not supplied.
+
+$opt->{package}			= '' unless $opt->{install};
+$opt->{install}			= '' unless $opt->{package};
+
+$opt->{files}			&&=         $opt->{uninstall};
+$opt->{settings}		&&=         $opt->{uninstall};
+$opt->{prefs}			&&=         $opt->{uninstall};
+$opt->{uninstall}		&&=			$opt->{prefs} || $opt->{settings} || $opt->{files};
+
+# Plan to stop first if uninstalling (from boot volume anyway)
+$opt->{stop}			||=         $opt->{uninstall};
+
+# Ignore -configure and -restart groups if files removed but not re-installed.
+$opt->{configure}		&&=         $opt->{install} if $opt->{files};  
+$opt->{restart}			&&=         $opt->{install} if $opt->{files};
+
+# Ignore -restart or -stop options if target disk is not the boot volume
+$opt->{restart}			&&=         $TargetDiskIsBootVol;
+$opt->{stop}			&&=         $TargetDiskIsBootVol;
+
+$opt->{users}			= undef if !$opt->{configure};
+$opt->{access}			&&=         $opt->{configure};
+$opt->{computerinfo}	&&=         $opt->{configure};
+$opt->{allowaccessfor}	&&=			$opt->{configure};
+$opt->{on}				&&=         $opt->{access};
+$opt->{off}				&&=         $opt->{access};
+$opt->{allusers}		&&=			$opt->{allowaccessfor};
+$opt->{specifiedusers}	&&=			$opt->{allowaccessfor};
+$opt->{privs}			&&=         $opt->{configure};
+$opt->{all}				&&=         $opt->{privs};
+$opt->{none}			&&=         $opt->{privs};
+$opt->{mask}			=  (length ($opt->{mask}) ? $opt->{mask} : undef);
+$opt->{mask}			= undef if !$opt->{privs};
+$opt->{privs}			&&=         $opt->{mask} || defined($SpecifiedPrivs);
+$opt->{privs}			= 0 if $opt->{allowaccessfor};
+$opt->{configure}		&&=			$opt->{access} || $opt->{privs} || $opt->{computerinfo} || $opt->{clientopts} || $opt->{docopts} || $opt->{allowaccessfor};
+
+$opt->{agent}			&&=         $opt->{restart};
+$opt->{console}			&&=         $opt->{restart};
+$opt->{menu}			&&=         $opt->{restart};
+$opt->{restart}			&&=         $opt->{agent} || $opt->{console} || $opt->{menu};
+
+## use Data::Dumper; die &Dumper($opt);
+
+## Check for -h(elp) option
+(print (Usage1() . Usage2())), exit if $opt->{help};
+
+## Check for rogue arguments.
+(print ("Extra arguments: @{[join(', ', map {qq{'$_'}} @$ExtraArgs)]}\n\n" . Usage1())), exit if @$ExtraArgs;
+
+## Check that at least 1 of the 5 major actions has been chosen...
+
+Echo('MSG_NOOP'), exit unless 
+	(
+	 $opt->{uninstall } || 
+	 $opt->{install   } || 
+	 $opt->{deactivate} || 
+	 $opt->{activate  } || 
+	 $opt->{configure } || 
+	 $opt->{stop      } || 
+	 $opt->{restart   }
+	 );
+
+## Show start message (see end for localizable message definitions)
+## ... but skip it if a GUI app has already done it for us.
+
+Echo('MSG_STRT') unless $ENV{APP};
+
+=pod
+
+Create an ARDParts object that knows about all ARD components:
+
+   1) whether they exist as files 
+   2) whether they are currently running as processes.
+
+
+To keep this script self-contained, the "ARDParts" object module is
+defined in this same script file (at the end).
+
+The object definition contains a table of PartIDs (e.g. ARD_ADMIN) and
+their corresponding standard locations.
+
+=cut
+
+
+my $Parts = ARDParts->new({PARENT_GUI_APP => $ENV{APP}, TARGET_DISK => $TargetDisk});
+
+
+## Decide whether we'll be changing component files by installing or
+## uninstalling (files).
+
+my $FileChanges = ($opt->{install} || $opt->{files});
+
+
+## Decide what to kill at the start
+
+my $KillHelper  = ($opt->{stop}		|| $opt->{agent}    || $FileChanges) && $TargetDiskIsBootVol;
+my $KillAgent   = ($opt->{stop}		|| $opt->{agent}    || $FileChanges) && $TargetDiskIsBootVol;
+my $KillAdmin   = ($opt->{stop}		|| $opt->{console})                  && $TargetDiskIsBootVol;
+
+
+## Deactivate if appropriate...
+
+if ($opt->{deactivate})
+{
+    $CurrentState = `/bin/launchctl list com.apple.screensharing 2>/dev/null`;
+    if (index($CurrentState, 'Label') != -1) {
+        system("/bin/launchctl", "unload", "-w", "/System/Library/LaunchDaemons/com.apple.screensharing.plist");
+    }
+    
+    TryKill(qw(ARD_VNCPRIVPROXY	MSG_PP	9));
+    TryKill(qw(SS_DAEMON		MSG_SS	9));
+    TryKill(qw(SS_AGENT			MSG_SS	9));
+
+    system("/bin/rm", "-f", "${TargetDisk}${RemoteManagementLaunchdFile}");
+    
+	Echo('MSG_RMST');
+}
+
+### Activate
+
+## Set ARD to start up at boot time by removing and re-adding the
+## ARDAGENT=-YES- tag in /etc/hostconfig
+
+my $tccstate = "";
+
+if ($opt->{activate})
+{
+    if ($isTrustRestricted)
+    {
+        if ($tccStateCommandPresent)
+        {
+            $tccstate = `$tccStateCommand`;
+                    
+            my ($tccstateObject);
+            
+            $tccstateObject = NSString->stringWithUTF8String_($tccstate);
+            die "perlRefFromPlist can't convert plist to NSString:\t$tccstate\n"
+                unless ($$tccstateObject);
+            $tccstateObject = $tccstateObject->propertyList();
+            die "perlRefFromPlist can't read property list\n" unless ($$tccstateObject);
+            $tccstateObject = Foundation::perlRefFromObjectRef($tccstateObject);
+            die "perlRefFromPlist can't convert object to perl ref\n" unless ($tccstateObject);
+            
+            if ($tccstateObject->{screenCapture} == 0)
+            {
+                Echo('MSG_TRUST_ABSENT');
+            }
+            
+            if ($tccstateObject->{postEvent} == 0)
+            {
+                Echo('MSG_TRUST_RESTRICTED');
+            }
+        }
+        else
+        {
+            Echo('MSG_TRUST_RESTRICTED');
+        }
+    }
+    
+    if ($TargetDiskIsBootVol)
+    {
+        $CurrentState = `/bin/launchctl list com.apple.screensharing 2>/dev/null`;
+        if (index($CurrentState, 'Label') == -1) {
+            system("/bin/launchctl", "load", "-wF", "/System/Library/LaunchDaemons/com.apple.screensharing.plist");
+        }
+    }
+    else
+    {
+        my $LaunchdOverrideFile = "${TargetDisk}var/db/launchd.db/com.apple.launchd/overrides";
+        system("/usr/bin/defaults", "write", $LaunchdOverrideFile, "com.apple.screensharing", '{ Disabled = 0; }');
+        chmod 0600, $LaunchdOverrideFile;
+        chown 0, 0, $LaunchdOverrideFile;
+    }
+    
+    IO::File->new(">${TargetDisk}${RemoteManagementLaunchdFile}")->print("enabled");
+    Echo('MSG_ACTIVATED_REMOTE_MANAGEMENT');
+}
+
+## Try to kill everything we might need to kill.
+
+TryKill(qw(ARD_ADMIN		MSG_KA	9)) if $KillAdmin;
+TryKill(qw(ARD_HELPER		MSG_KH	9)) if $KillHelper;
+TryKill(qw(ARD_HELPER2		MSG_KH	9)) if $KillHelper;
+TryKill(qw(ARD_HELPER3		MSG_KH	9)) if $KillHelper;
+
+TryKill(qw(ARD_AGENT		MSG_KG	9)) if $KillAgent;
+TryKill(qw(ARD_AGENT2		MSG_KG	9)) if $KillAgent;
+TryKill(qw(ARD_RMDB			MSG_DB	9)) if $KillAgent;
+# Kill privilege proxy before AppleVNCServer so that the next started AppleVNCServer doesn't talk to the old privilege proxy.
+TryKill(qw(ARD_VNCPRIVPROXY	MSG_PP	9)) if $KillAgent;
+TryKill(qw(ARD_VNC			MSG_VN	9)) if $KillAgent;
+TryKill(qw(ARD_RFBREGMDNS	MSG_RR	9)) if $KillAgent;
+TryKill(qw(ARD_VIEWER		MSG_VW	9)) if $KillAgent;
+TryKill(qw(ARD_MSG			MSG_MG	9)) if $KillAgent;
+
+TryKill(qw(ARD_CIMOM		MSG_CM	9)) if $KillAgent;
+
+## Just in case.
+#TryKill(qw(ARD_AGENT		MSG_KG	9)) if $KillAgent;
+#TryKill(qw(ARD_AGENT2		MSG_KG	9)) if $KillAgent;
+
+### Uninstall
+
+TryRemv(qw(ARD_MENU			MSG_RM	 )) if $opt->{files};
+TryRemv(qw(ARD_ADMIN_APP	MSG_RA	 )) if $opt->{files};
+TryRemv(qw(ARD_HELPER		MSG_RH	 )) if $opt->{files};
+TryRemv(qw(ARD_HELPER2		MSG_RH	 )) if $opt->{files};
+TryRemv(qw(ARD_HELPER3		MSG_RH	 )) if $opt->{files};
+TryRemv(qw(ARD_AGENT		MSG_RG	 )) if $opt->{files};
+TryRemv(qw(ARD_AGENT2		MSG_RG	 )) if $opt->{files};
+TryRemv(qw(ARD_STARTUP		MSG_RS	 )) if $opt->{files};
+TryRemv(qw(ARD_PREFPANE		MSG_RP	 )) if $opt->{files};
+TryRemv(qw(ARD_DOCS			MSG_RD	 )) if $opt->{files};
+TryRemv(qw(ARD_RECEIPTS		MSG_RE	 )) if $opt->{files};
+
+TryRemv(qw(ARD_CIMOM_DIR	MSG_RCM	 )) if $opt->{files};
+TryRemv(qw(ARD_RMDB_DIR		MSG_RDB	 )) if $opt->{files};
+TryRemv(qw(ARD_VNC_DIR		MSG_RVN	 )) if $opt->{files};
+TryRemv(qw(ARD_AGENT_APP	MSG_RAD	 )) if $opt->{files};
+
+TryRemv(qw(ARD_USRPREFS		MSG_RU	 )) if $opt->{prefs};
+TryRemv(qw(ARD_SYSPREFS		MSG_RX	 )) if $opt->{settings};
+TryRemv(qw(ARD_AGTPREFS		MSG_RY	 )) if $opt->{settings};
+TryRemv(qw( RM_SYSPREFS		MSG_RZ	 )) if $opt->{settings};
+
+if ($opt->{settings})
+{
+	## Remove all local users' "naprivs" property (it's a bitmask)
+	
+	foreach (@$AllUsers) {system(qq{$serviceCmd -destroy "$databasePath/$_" naprivs})};
+
+	Echo('MSG_RMNI');
+
+}	
+
+### Install
+
+Echo('MSG_INST')                                                      if $opt->{install};
+RunInstaller($opt->{package}, 'MSG_IN', $TargetDisk, $opt->{verbose}) if $opt->{install};
+
+
+## Remember how some things were before we changed things.
+
+my $AdminWasRunning = $Parts->PartIsRunning   ('ARD_ADMIN');
+my $AdminOldOwner   = $Parts->PartProcessOwner('ARD_ADMIN');
+my $HadMenuExtra	= $Parts->PartExists      ('ARD_MENU' );
+
+
+## Rescan parts to see what process and files might be different now.
+
+$Parts = ARDParts->new({PARENT_GUI_APP => $ENV{APP}, TARGET_DISK => $TargetDisk});
+
+
+my $HaveAdminNow = ($Parts->PartExists('ARD_ADMIN'  ));
+my $HaveAgentNow = ($Parts->PartExists('ARD_AGENT'  ) || 
+					$Parts->PartExists('ARD_AGENT2' ));
+my $HaveExtraNow = ($Parts->PartExists('ARD_MENU'   ));
+my $HaveHelperNow= ($Parts->PartExists('ARD_HELPER' ) || 
+					$Parts->PartExists('ARD_HELPER2') || 
+					$Parts->PartExists('ARD_HELPER3'));
+
+## Figure out which (genrally non-root) owner should start the admin
+## app.  We try: 1) the same owner as before, if applicable, 2) the
+## owner of the GUI app from which this script is being called, if
+## any, then 3) the owner of the SystemUIServer.  If none of those are
+## known, we won't try start it.
+
+my $AdminOwner = ($AdminOldOwner || 
+				  $Parts->PartProcessOwner('PARENT_GUI_APP') || 
+				  $Parts->PartProcessOwner('SYS_UISERVER'));
+
+
+## Decide what to (at least try to) restart when we're done.
+
+my $StartAdmin  = $HaveAdminNow  && $HaveAgentNow && ($opt->{console} && $AdminOwner);
+my $StartAgent  =                   $HaveAgentNow && !$UseLaunchd && ($opt->{agent} || $StartAdmin);
+my $StartHelper = $HaveHelperNow && $HaveAgentNow && !$UseLaunchd && ($opt->{agent} || $StartAgent);
+
+
+## If we're running in the GUI app and we opted to restart the Admin,
+## bring the GUI back to front when we are done.
+
+my $GUIOwner	= $Parts->PartProcessOwner('PARENT_GUI_APP');
+my $FocusGUI    = $Parts->PartIsRunning   ('PARENT_GUI_APP') && $GUIOwner && $StartAdmin;
+
+
+## We'll want to HUP the System UI server to reload the Menu Extra if
+## asked to do so, or if an uninstall or install occurred.  But we can
+## skip it unless the Menu Extra itself neither existed previously nor
+## now exists.
+
+my $StartExtra	= ($opt->{menu} || $FileChanges || ($HadMenuExtra xor $HaveExtraNow));
+
+
+### Configure
+
+## Restore Remote Control System pref privileges...
+
+sub SetUserNAPrivs {my ($User, $Mask, $Verbose) = @_; sysecho($Verbose, qq{$serviceCmd -create "$databasePath/$User" naprivs '$Mask'})}
+
+if (defined($opt->{mask}))
+{
+	foreach (@{$opt->{users} || []}) 
+	{
+		SetUserNAPrivs($_, $opt->{mask}, $opt->{verbose});
+
+		print("$_: ") unless $opt->{quiet};
+		Echo('MSG_STMA');
+	};
+
+}	
+elsif($opt->{privs} or $opt->{access})
+{
+	foreach (@{$opt->{users} || []}) 
+	{
+		## Get the existing mask. Redirect error output to /dev/null in case there is no naprivs.
+		my $Mask = 0;
+		if (`$serviceCmd -read "$databasePath/$_" naprivs 2>/dev/null` =~ /naprivs: (.*)/)
+		{
+			$Mask = $1;
+		}		
+			
+		## Convert the mask to an integer
+		$Mask		= $Mask + 0;
+		
+		if ($opt->{privs})
+		{
+			## Retain the UserHasAccess bit of the Mask and replace all
+			## the other bits with the specified privileges
+
+			$Mask		= ($Mask &= $PrivMasks->{UserHasAccess}) | $SpecifiedPrivs;
+			
+			print "$_: " unless $opt->{quiet};
+			Echo('MSG_STRC');
+		}
+		
+		if ($opt->{access})
+		{
+			## Turn the HasUserAccess flag on or off as required.
+			$Mask		|=  $PrivMasks->{UserHasAccess} if $opt->{on};
+			$Mask		&= ~$PrivMasks->{UserHasAccess} if $opt->{off};
+			
+			print "$_: " unless $opt->{quiet};
+			Echo('MSG_STRA');
+		};
+
+		## Turn the Mask into the string representation of a signed (!) 4-byte long.
+		$Mask		= unpack("l" , pack("l", $Mask));
+			
+		## Restore it in the database.
+		SetUserNAPrivs($_, $Mask, $opt->{verbose});
+	}
+}
+
+if ($opt->{computerinfo})
+{
+	my $TargetFile		= "${TargetDisk}Library/Preferences/com.apple.RemoteDesktop.plist";
+	my $DefaultTemplate =
+	q{<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Text1</key>
+	<string></string>
+	<key>Text2</key>
+	<string></string>
+	<key>Text3</key>
+	<string></string>
+	<key>Text4</key>
+	<string></string>
+</dict>
+</plist>
+};
+
+	my $StringVals			= {map {($opt->{"set$_"}) ? ("Text$_" => $opt->{$_}) : ()} (1..4)};
+	my $BooleanVals			= {};
+	
+	&WriteSimpleXMLPrefs($TargetFile, $DefaultTemplate, $StringVals, $BooleanVals);
+	PostDistributedNotification("com.apple.remotedesktop.workstationInfoChanged");
+	
+	Echo('MSG_STCM');
+}
+
+sub GenerateVNCPassword
+{
+    use Encode;
+    
+    my $string = decode('UTF-8', shift(@_));
+    my $latin1_string = encode('iso-latin-1', $string);
+    $latin1_string =~ s/(.)/sprintf("%x",ord($1))/eg;
+    $latin1_string = substr($latin1_string, 0, 16);
+    my @hexArray = ($latin1_string =~ /(..)/g);
+    # Encrypt @hexArray
+    for ( my $i = 0; $i < 16; $i++) {
+        $hexArray[$i] = sprintf("%02X", (hex($hexArray[$i]) ^ (23 + ($i * 29)) ) & 255 );
+    }
+    return join("",@hexArray); # Now encrypted
+}
+
+sub PostDistributedNotification
+{
+    my ($notificationName) = @_;
+    my $distnotifyutil = "/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/distnotifyutil";
+    
+    system("$distnotifyutil $notificationName") == 0 or
+        warn("WARNING: Failed to post distributed notification");
+}
+
+## The VNC Legacy password, if supplied, is stored in its own file.
+
+if ($opt->{clientopts} && $opt->{setvncpw} && length($opt->{vncpw}))
+{
+	## The encrypted password we are given is stored in the first 32
+	## characters of the VNCSettings file.
+
+	## Caller is responsible for correctly encrypting the password.
+
+	my $VNCSettingsFile = "/Library/Preferences/com.apple.VNCSettings.txt";
+	my $Settings		= eval {do {local $/; IO::File->new("<$VNCSettingsFile")->getline()}} || "";
+	
+	$opt->{vncpw}		= GenerateVNCPassword($opt->{vncpw});
+	
+	($Settings			=~ s{.{32}}{$opt->{vncpw}}s or 		## Replace first 32 bytes with PW, or...
+	 $Settings			= $opt->{vncpw});					## Replace entire file.
+
+	eval {IO::File->new(">$VNCSettingsFile")->print($Settings)} or warn "WARNING: Failed to write '$VNCSettingsFile'.\n";
+
+	## Make the file readable only by root and owned by root.
+	chmod 0600, $VNCSettingsFile;
+	chown 0,0, $VNCSettingsFile;
+}
+
+my $ClientSettingsFile		= "${TargetDisk}Library/Preferences/com.apple.RemoteManagement.plist";
+if ($opt->{clientopts})
+{
+	my $DefaultTemplate =
+		q{<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DirectoryGroupLoginsEnabled</key>
+	<false/>
+	<key>LoadRemoteManagementMenuExtra</key>
+	<true/>
+	<key>ScreenSharingReqPermEnabled</key>
+	<false/>
+	<key>VNCLegacyConnectionsEnabled</key>
+	<false/>
+	<key>WBEMIncomingAccessEnabled</key>
+	<false/>
+</dict>
+</plist>
+};
+	
+	my $StringVals  = {(
+						)};
+
+	my $BooleanVals = {(
+						($opt->{setmenuextra} ? (LoadRemoteManagementMenuExtra	=> BoolVal($opt->{menuextra})) : ()), 
+						($opt->{setdirlogins} ? (DirectoryGroupLoginsEnabled	=> BoolVal($opt->{dirlogins})) : ()), 
+						($opt->{setreqperm  } ? (ScreenSharingReqPermEnabled	=> BoolVal($opt->{reqperm  })) : ()), 
+						($opt->{setvnclegacy} ? (VNCLegacyConnectionsEnabled	=> BoolVal($opt->{vnclegacy})) : ()), 
+						($opt->{setwbem     } ? (WBEMIncomingAccessEnabled		=> BoolVal($opt->{wbem     })) : ()), 
+						)};
+	
+	&WriteSimpleXMLPrefs($ClientSettingsFile, $DefaultTemplate, $StringVals, $BooleanVals);
+	
+	Echo('MSG_STCO');
+}
+
+if ($opt->{docopts})
+{
+    my $AgentSettingsFile		= "${TargetDisk}Library/Preferences/com.apple.RemoteDesktop.plist";
+	my $DefaultTemplate =
+		q{<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DOCAllowRemoteConnections</key>
+	<false/>
+	<key>SerialNumberString</key>
+	<string>
+	</string>
+	<key>SerialNumberNameString</key>
+	<string>
+	</string>
+	<key>SerialNumberOrganizationString</key>
+	<string>
+	</string>
+</dict>
+</plist>
+};
+	
+	my $BooleanVals = {(
+						($opt->{setallowoc} ? (DOCAllowRemoteConnections	=> BoolVal($opt->{allowoc})) : ()), 
+						)};
+	my $StringVals  = {(
+						($opt->{setdocsn   } ? (SerialNumberString            =>         $opt->{docsn   })  : ()), 
+						($opt->{setdocsnnam} ? (SerialNumberNameString        =>         $opt->{docsnnam})  : ()), 
+						($opt->{setdocsnorg} ? (SerialNumberOrganizationString=>         $opt->{docsnorg})  : ()), 
+						)};
+
+	&WriteSimpleXMLPrefs($AgentSettingsFile, $DefaultTemplate, $StringVals, $BooleanVals);
+	
+	Echo('MSG_STDO');
+}
+
+if ($opt->{allowaccessfor})
+{
+	my $allowAllUsers;
+	
+	if ($opt->{allusers})
+	{
+		$allowAllUsers = "YES";
+	}
+	elsif ($opt->{specifiedusers})
+	{
+		$allowAllUsers = "NO";
+	}
+	
+	if($allowAllUsers)
+	{
+		print "Setting allow all users to $allowAllUsers.\n" unless $opt->{quiet};
+		system("/usr/bin/defaults write ${TargetDisk}Library/Preferences/com.apple.RemoteManagement ARD_AllLocalUsers -boolean $allowAllUsers") == 0
+				or die('Could not update RemoteManagement perference file with new allowAccessFor setting.');
+	}
+	
+	if(defined($SpecifiedPrivs))
+	{
+		print "Setting all users privileges to $SpecifiedPrivs.\n" unless $opt->{quiet};
+		system("/usr/bin/defaults write ${TargetDisk}Library/Preferences/com.apple.RemoteManagement ARD_AllLocalUsersPrivs -integer $SpecifiedPrivs") == 0
+			or die('Could not update RemoteManagement preference file with new all user privileges setting.');
+	}
+}
+
+sub WriteSimpleXMLPrefs
+{
+	my ($ClientPrefsFile, $PrefsFileTemplate, $StringVals, $BooleanVals) = @_;
+    my $ClientPrefsDomain = $ClientPrefsFile;
+    $ClientPrefsDomain =~ s/\.plist$//;
+
+	if (!(-f $ClientPrefsFile))
+	{
+		## Write out the template file and try again.
+        system("/usr/bin/defaults write \'${ClientPrefsDomain}\' \'${PrefsFileTemplate}\'") == 0 or warn "WARNING: Failed to write default contents for '$ClientPrefsFile'.\n";
+	}
+
+	foreach my $Key (keys %$StringVals)
+	{
+        my $Value = $StringVals->{$Key};
+        system("/usr/bin/defaults write \'${ClientPrefsDomain}\' \'${Key}\' -string \'${Value}\'") == 0 or warn "WARNING: Failed to write defaults value \'${Value}\' for key \'${Key}\'.\n";
+	}
+
+	foreach my $Key (keys %$BooleanVals)
+	{
+        my $Value = $BooleanVals->{$Key} ? "YES" : "NO";
+        system("/usr/bin/defaults write \'${ClientPrefsDomain}\' \'${Key}\' -bool ${Value}") == 0 or warn "WARNING: Failed to write defaults value \'${Value}\' for key \'${Key}\'.\n";
+	}
+}
+
+
+### Restart
+
+## 1) Start helper (which starts the agent) by running the Startup item.
+## 2) Then start the admin if appropriate
+## 3) Then bring GUI app back to front when done in case we launched other faceful apps
+
+#TryStart(qw(ARD_STARTUP	MSG_SH), undef      , 'AsBinary') if $StartHelper;
+TryStart (qw(ARD_AGENT		MSG_SG), undef                  ) if $StartHelper;
+TryStart (qw(ARD_ADMIN_APP	MSG_SA), $AdminOwner            ) if $StartAdmin;
+TryStart (qw(PARENT_GUI_APP XXX_XX), $GUIOwner              ) if $FocusGUI;
+
+
+## HUP the System UI Server if the ARD_MENU is still present.
+
+my $UIServerOwner = $Parts->PartProcessOwner('SYS_UISERVER');
+if ($StartExtra && $UIServerOwner)
+{
+    my $ClientSettingsDomain = $ClientSettingsFile;
+    $ClientSettingsDomain =~ s/\.plist$//;
+    my $DefaultsValue = `/usr/bin/defaults read \'${ClientSettingsDomain}\' LoadRemoteManagementMenuExtra 2>&1`;
+	my $MenuExtraEnabled = ($? == 0) && ($DefaultsValue == 1);
+	
+	if ($MenuExtraEnabled)              ## Launch the menu extra if it is enabled (no-op if already launched)
+	{
+		TryStart(qw(ARD_MENU		XXX_XX), undef,      !'AsBinary', 'WithOpen'); 
+	}
+	else ## or HUP the System UI Server to ensure it turns off.
+	{
+		TryKill(qw(SYS_UISERVER		MSG_HM	1));  ## 1 = HUP
+	}
+}
+
+## Done. 
+
+Echo('MSG_DONE');
+
+exit;
+
+
+############  INFRASTRUCTURE BEYOND THIS POINT ############
+
+sub ParseEnvVarsFromSpec
+{
+    my ($SwitchesSpec) = @_;
+
+    ## Use a spec to map environment variables to switches
+
+    my $SwitchesHash    = {                                    @$SwitchesSpec};
+    my $EnvVarsList     = [grep {exists   $SwitchesHash->{$_}} @$SwitchesSpec];
+    my $SwitchesList    = [map {($ENV{$_} ? ($SwitchesHash->{$_} || ()) : ())} @$EnvVarsList];
+
+    my $SwitchesOpts    = {map {ref($_) ? %$_ : ($_ => 1)} @$SwitchesList};
+
+	## Strip leading dashes from keys of the options hash
+	foreach (keys %$SwitchesOpts) {my $NoDash = (m{([^-]+)})[0]; $SwitchesOpts->{$NoDash} = delete $SwitchesOpts->{$_};}
+
+    ## use Data::Dumper; die &Dumper($SwitchesOpts, $SwitchesList);
+
+    return($SwitchesOpts, $SwitchesList);
+}
+
+sub ParseCmdVarsFromSpec
+{
+    my ($SwitchesSpec) = @_;
+
+    ## Use a spec that maps environment variables to switches to build
+    ## a spec that would allow GetOpt::Long to get the same infro from
+    ## the command line switches.
+
+    my $SwitchesHash    = {                                    @$SwitchesSpec};
+    my $SwitchSpecs     = [values                              %$SwitchesHash];
+
+    my $OptsSpec        = {map {ref($_) ? ("@{[(keys(%$_))[0]]}=s" => "") : ($_ => 0)} @$SwitchSpecs};
+
+    my ($Opts, $Args) = get_opts_hash($OptsSpec);
+
+    ## use Data::Dumper; die &Dumper($SwitchSpecs, $OptsSpec, $Opts, $Args);
+
+	return($Opts, $Args);
+}
+
+=pod
+
+get_opts_hash()
+
+Utility method to process command-line options using GetOpt::Long and
+a few enhancements. Optionally: any multi-valued field can be
+post-processed to split any single containing commas or spaces into
+multiple values.
+
+=cut
+
+sub get_opts_hash
+{
+    my ($Specs, $SplitCommasAndSpaces)  = @_;
+
+    my @Specs = (%$Specs);
+
+    use Getopt::Long qw(GetOptions);
+
+    my $Opts    = {};
+    my $mkspec  = sub
+    {
+        my ($Spec, $Default) = @_;
+        my ($Opt  ) = ($Spec =~ /(\w+)/)[0];
+        $Opts->{$Opt} = $Default;
+        ($Spec => (ref($Opts->{$Opt}) ?  $Opts->{$Opt} : \ $Opts->{$Opt}));
+    };
+
+    ## Extract all arguments that seem to be GetOpt-style arguments.
+    GetOptions(map {&$mkspec(@Specs[($_*2),($_*2)+1])} (0..int($#Specs/2)));
+
+    if ($SplitCommasAndSpaces)
+    {
+        ## Allow commas and/or spaces to separate values in any
+        ## multi-valued options. (Not tabs -- we might want to accept a
+        ## tab as a valid input character.)
+
+        ## This goes a bit beyond the customary Getopt::Long paradigm, but
+        ## is convenient since it allows something like -f=f1,f2,f3 -f=f4
+
+        foreach (grep {ref $Opts->{$_} eq 'ARRAY'} keys %$Opts)
+        {$Opts->{$_} = [map {split(/[ ,]+/)} @{$Opts->{$_}}]};
+    }
+
+    ## Get any remaining arguments.
+    my $Args = [@ARGV];
+
+    ## Debugging
+    ## use Data::Dumper; print &Dumper($Opts, $Args);
+
+    return($Opts, $Args);
+}
+
+sub TryKill
+{
+	my ($PartID, $MsgBase, $Signal) = @_;
+
+	## if ($Parts->PartIsRunning($PartID))
+	{
+		$Parts->KillPart($PartID, $Signal) and Echo("${MsgBase}OK");
+	}
+}
+
+sub TryRemv
+{
+	my ($PartID, $MsgBase) = @_;
+	
+	if ($Parts->PartExists($PartID))
+	{
+		$Parts->RemovePart($PartID       ) and Echo("${MsgBase}OK") or Echo("${MsgBase}NT");
+	}
+}
+
+sub TryStart
+{
+	my ($PartID, $MsgBase, $User, $AsBinary, $WithOpen) = @_;
+
+	## Get the path(s) for the part.
+	my $Paths = $Parts->PartPaths($PartID) || [];
+
+	## Make sure there are more than zero
+	Echo("${MsgBase}NT"), return unless @$Paths;
+
+	foreach my $Path (@$Paths)
+	{
+		my $OK;
+		if ($WithOpen)
+		{
+			$OK =                                          `/usr/bin/open   '$Path'`;
+		}
+		elsif ($User)
+		{
+			$OK = run_detached("/usr/bin/su", $User, "-c", "/usr/bin/open   '$Path'");
+		}
+		elsif ($AsBinary)
+		{
+			$OK = run_detached(                                   "'$Path'");
+		}
+		else ## Default is detached with "open" command
+		{
+			$Path =~ s{(\.app).*}{$1};		## remove anything beyond the last .app
+			$OK = run_detached(                            "/usr/bin/open",  $Path  );
+		}
+
+		$OK and Echo("${MsgBase}OK") or Echo("${MsgBase}NT");
+	}
+}
+
+## BoolVal
+
+## Convert a string to a boolean value, recognizing y(es) and n(o),
+## numeric forms, and/or non-empty/empty
+
+sub BoolVal	
+{
+	my ($Val) = @_;
+	return($Val =~ /y/i ? 1 : ($Val =~ /n/i ? 0 : $Val && 1 || 0));
+}
+
+
+sub RunInstaller
+{
+	my ($Package, $MsgBase, $TargetDisk, $Verbose) = @_;
+
+	&InstallPackageOnVolume($Package, $TargetDisk, $Verbose) and Echo("${MsgBase}OK") or Echo("${MsgBase}NT", $Verbose);
+
+}
+
+sub InstallPackageOnVolume
+{
+	my ($Package, $TargetDisk, $Verbose) = @_;
+	
+	my $VerbosityArgs	= ($Verbose ? '-verbose -dumplog' : '> /dev/null 2>&1');
+	local $ENV{KS_VERBOSE} = $Verbose;	## Pass Verbosity through to kickstarter in the installer if any
+
+	my $OK				= sysecho($Verbose, "/usr/sbin/installer -target '$TargetDisk' -pkg '$Package' $VerbosityArgs");
+	
+	my $exit_value  = $? >> 8;
+	my $signal_num  = $? & 127;
+	my $dumped_core = $? & 128;
+
+	return($OK);
+}
+
+### run_detached
+
+### Runs a command that will become or launch a daemon by forking and
+### execing, detaching from all of the parent's input streams.
+
+sub run_detached 
+{
+	my ($Cmd, @Args) = @_;
+
+	defined(my $pid = fork)   or die "Can't fork: $!";
+	
+	## Parent:
+
+	return($pid) if $pid;	
+
+	## Child:
+
+	chdir '/'                 or die "Can't chdir to /: $!";
+
+	use POSIX 'setsid';
+	setsid                    or die "Can't start a new session: $!";
+
+	open STDIN , '</dev/null' or die "Can't read /dev/null: $!";
+	open STDOUT, '>/dev/null' or die "Can't write to /dev/null: $!";
+	open STDERR, '>&STDOUT'   or die "Can't dup stdout: $!";
+
+	exec($Cmd, @Args);
+
+	die "Failed to exec: '$Cmd @Args'\n";
+}
+
+
+### sysecho
+
+### like system() except optionally echoes the command line before running it.
+
+sub sysecho
+{
+	my $Success;
+
+	my ($Verbose, $Cmd, @Args) = @_;
+
+	## Shell-quote all args except 1st one (if needed)
+	my @ArgsEcho = (map {&maybe_sh_quote($_)} @Args);
+	
+	## Print them all to stdout
+	print "$Cmd @ArgsEcho\n" if $Verbose;
+
+	## Call system command on original, unmodified args
+	system($Cmd, @Args);
+
+	## Return Boolean success based on exit code.
+	$Success = (($?>>8) == 0);
+
+  done:
+	return($Success);
+}
+
+## Messages
+BEGIN 
+{
+	# All messages the script can display are loaded and defaulted here.
+	# Any of them may be overridden in a localizable $ENV{STRINGS_FILE}
+	
+	my $Messages = 
+	{
+		MSG_STRT => 'Starting...',
+
+		MSG_NOOP => 'No options selected.',
+
+		MSG_KAOK => 'Stopped ARD Admin.',
+		MSG_KANT => 'Failed to stop ARD Admin.',
+		
+		MSG_KHOK => 'Stopped ARD Helper.',
+		MSG_KHNT => 'Failed to stop ARD Helper.',
+		
+		MSG_KGOK => 'Stopped ARD Agent.',
+		MSG_KGNT => 'Failed to stop ARD Agent.',
+		
+		MSG_CMOK => 'Stopped CIMOM (OpenWBEM Server).',
+		MSG_CMNT => 'Failed to stop CIMOM (OpenWBEM Server).',
+		
+		MSG_DBOK => 'Stopped ARD Database.',
+		MSG_DBNT => 'Failed to stop ARD Database.',
+		
+		MSG_VNOK => 'Stopped VNC Server.',
+		MSG_VNNT => 'Failed to stop VNC Server.',
+		
+		MSG_PPOK => 'Stopped VNC Privilege Proxy',
+		MSG_PPNT => 'Failed to stop VNC Privilege Proxy',
+		
+		MSG_RROK =>	'Stopped RFB Register MDNS',
+		MSG_RRNT => 'Failed to stop RFB Register MDNS',
+		
+		MSG_SSOK => 'Stopped the Screen Sharing service.',
+		MSG_SSNT => 'Failed to stop the Screen Sharing service.',
+
+		MSG_VWOK => 'Stopped VNC Viewer.',
+		MSG_VWNT => 'Failed to stop VNC Viewer.',
+
+		MSG_MGOK => 'Stopped Remote Desktop Message.',
+		MSG_MGNT => 'Failed to stop Remote Desktop Message.',
+		
+		MSG_KGOK => 'Stopped ARD Agent.',
+		MSG_KGNT => 'Failed to stop ARD Agent.',
+
+		MSG_SAOK => 'Started ARD Admin.',
+		MSG_SANT => 'Failed to start ARD Admin.',
+		
+		MSG_SHOK => 'Started ARD Helper.',
+		MSG_SHNT => 'Failed to start ARD Helper.',
+		
+		MSG_SGOK => 'Started ARD Agent.',
+		MSG_SGNT => 'Failed to start ARD Agent.',
+		
+
+		MSG_HMOK => 'Restarted Menu Extra (System UI Server).',
+		MSG_HMNT => 'Failed to restart Menu Extra (System UI Server).',
+
+		
+		MSG_RMOK => 'Removed ARD Menu Extra.',		
+		MSG_RMNT => 'Failed to remove ARD Menu Extra.',
+
+		MSG_RAOK => 'Removed Remote Desktop Application.',		   
+		MSG_RANT => 'Failed to remove Remote Desktop Application.',
+
+		MSG_RHOK => 'Removed ARD Helper.',		   
+		MSG_RHNT => 'Failed to remove ARD Helper.',
+
+		MSG_RGOK => 'Removed ARD Agent.',		   
+		MSG_RGNT => 'Failed to remove ARD Agent.',
+
+
+		MSG_RADOK => 'Removed ARD Agent Directory.',		   
+		MSG_RADNT => 'Failed to remove ARD Agent Directory.',
+
+		MSG_RDBOK => 'Removed ARD Database.',		   
+		MSG_RDBNT => 'Failed to remove ARD Database.',
+
+		MSG_RVNOK => 'Removed VNC Server.',		   
+		MSG_RVNNT => 'Failed to remove VNC Server.',
+
+		MSG_RCMOK => 'Removed CIMOM (OpenWBEM) Server.',		   
+		MSG_RCMNT => 'Failed to remove CIMOM (OpenWBEM) Server.',
+
+
+		MSG_RSOK => 'Removed ARD Startup Item.',		   
+		MSG_RSNT => 'Failed to remove ARD Startup Item.',
+
+		MSG_RPOK => 'Removed ARD Preference Pane.',		   
+		MSG_RPNT => 'Failed to remove ARD Preference Pane.',
+
+		MSG_RDOK => 'Removed ARD Documentation.',		   
+		MSG_RDNT => 'Failed to remove ARD Documentation.',
+
+		MSG_REOK => 'Removed ARD Receipts.',		   
+		MSG_RENT => 'Failed to remove ARD Receipts.',
+
+		MSG_RXOK => 'Removed ARD System Preferences.',		   
+		MSG_RXNT => 'Failed to remove ARD System Preferences.',
+
+		MSG_RYOK => 'Removed ARD Agent Preferences.',		   
+		MSG_RYNT => 'Failed to remove ARD Agent Preferences.',
+
+		MSG_RZOK => 'Removed Remote Management System Preferences.',		   
+		MSG_RZNT => 'Failed to remove Remote Management System Preferences.',
+
+		MSG_RUOK => 'Removed ARD Adminstrator preferences.',		   
+		MSG_RUNT => 'Failed to remove ARD Adminstrator preferences.',
+
+		MSG_INST => 'Installing...',
+		MSG_INOK => 'Installed successfully.',
+		MSG_INNT => 'Install failed.',
+
+		MSG_STMA =>	'Set user permissions mask.',
+		MSG_STRA =>	'Set user remote access.',
+		MSG_STRC =>	'Set user remote control privileges.',
+		MSG_RMNI =>	'Removed remote control privileges for all users.',
+		
+		MSG_STCM =>	'Set the client computer information fields.',
+		MSG_STCO =>	'Set the client options.',
+		MSG_STDO =>	'Set the agent data collection options.',
+
+		MSG_STST =>	'Created preference to start ARD after reboot.',
+		MSG_RMST =>	'Removed preference to start ARD after reboot.',
+		MSG_ACTIVATED_REMOTE_MANAGEMENT => 'Activated Remote Management.',
+		
+        MSG_TRUST_RESTRICTED => 'Screen control might be disabled. Screen Sharing or Remote Management must be enabled from System Preferences or via MDM.',
+        
+        MSG_TRUST_ABSENT => 'Screen recording might be disabled. Screen Sharing or Remote Management must be enabled from System Preferences or via MDM.',
+        
+		MSG_DONE => 'Done.',
+	};
+	
+	my $MsgsInited	= 0;
+	
+	sub Echo
+	{
+		my ($ID) = (@_);
+		
+		## Don't do any message loading or printing if we're in "quiet" mode.
+		return if $opt->{quiet};
+
+		## Try only once to load localized strings if the file was
+		## specified and exists.  We support either sh syntax or Perl
+		## syntax in the localizable strings file (Perl similar to above).
+		
+		if (!$MsgsInited && -f $ENV{STRINGS_FILE})
+		{
+			my $File		= IO::File->new("<$ENV{STRINGS_FILE}");
+			my $RawStrings	= do {local $/=undef; $File->getline() if $File};
+			$Messages		= {%$Messages, ($RawStrings =~ m{(\w+).*?=.*?'(.*)'}g)};
+		}
+		$MsgsInited = 1;
+		
+		my $Message = $Messages->{$ID};
+
+		## Remove any incoming terminating newlines so we print exactly one.
+		$Message =~ s{\n+$ }{}x;
+
+        if ($Message eq $Messages->{'MSG_TRUST_RESTRICTED'} || $Message eq $Messages->{'MSG_TRUST_ABSENT'})
+        {
+            #print color 'red';
+            print ("[31m");
+            
+            print ("$Message\n");
+            
+            #print color 'reset';
+            print ("[0m");
+        }
+        else
+        {
+            print ("$Message\n") if $Message;
+        }
+	}
+}
+
+### ARDParts Object
+
+### Formerly this was in "ARDParts.pm".  Moved here to keep this
+### script completely self-contained.
+
+
+BEGIN
+{
+
+#!/usr/bin/perl
+# Emacs: -*- tab-width: 4; -*-
+
+package ARDParts;
+use strict;
+
+=pod
+
+ARDParts
+
+A perl module to encapsulate knowledge of the locations of various
+parts (aka files and executables) of Apple Remote Desktop.
+
+Recognized "parts" are identified by their "PartID" as documented in
+the tables immediately below.
+
+Each part will be analyzed for existence in the file system and also
+for whether one or more instances of it happens to be running as a
+process.
+
+Parts may be specified as multiple paths and/or using * as a wildcard
+to be interpreted by glob().  However wildcards are not applied to the
+search for running processes.  (Those paths should match exactly.)
+
+Copyright � 2003-2014 Apple Inc.  All Rights Reserved.
+
+=cut
+
+## {};
+
+my $ARDComponents = 
+{    
+    ARD_ADMIN		=>	'/Applications/Remote Desktop.app/Contents/MacOS/Remote Desktop',
+    ARD_ADMIN_APP	=>	'/Applications/Remote Desktop.app',
+
+    ARD_HELPER		=>	'/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/ARDHelper',	## New location
+    ARD_HELPER2		=>	'/System/Library/CoreServices/ARD Agent.app/Contents/MacOS/ARD Helper',	    				## Old location (1.2.1)
+    ARD_HELPER3		=>	'/System/Library/CoreServices/ARD Helper',													## Old location (1.2)
+    ARD_AGENT		=>	'/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/MacOS/ARDAgent',		## New Location
+    ARD_AGENT2		=>	'/System/Library/CoreServices/ARD Agent.app/Contents/MacOS/ARD Agent',						## Old Location (1.2.x)
+
+	ARD_CIMOM		=>	'/System/Library/CoreServices/RemoteManagement/OpenWBEMServer.bundle/libexec/owcimomd',
+	ARD_RMDB		=>	'/System/Library/CoreServices/RemoteManagement/rmdb.bundle/bin/postmaster',
+	ARD_VNC			=>	'/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/AppleVNCServer',
+	ARD_VNCPRIVPROXY=>	'/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/VNCPrivilegeProxy',
+	ARD_RFBREGMDNS	=>	'/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/RFBRegisterMDNS',
+	ARD_VIEWER		=>	'/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/Shared Screen Viewer.app/Contents/MacOS/Shared Screen Viewer',
+	ARD_MSG			=>	'/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/Remote Desktop Message.app/Contents/MacOS/Remote Desktop Message',
+	
+    ARD_MENU		=>	'/System/Library/CoreServices/Menu Extras/RemoteDesktop.menu',
+
+    ARD_STARTUP		=>	'/System/Library/StartupItems/RemoteDesktopAgent/RemoteDesktopAgent',
+
+    ARD_PREFPANE	=>	'/System/Library/PreferencePanes/ARDPref.prefPane',
+
+    ARD_DOCS		=>	'/Library/Documentation/RemoteDesktop',
+
+	ARD_CIMOM_DIR	=>	'/System/Library/CoreServices/RemoteManagement/OpenWBEMServer.bundle',
+	ARD_RMDB_DIR	=>	'/System/Library/CoreServices/RemoteManagement/rmdb.bundle',
+	ARD_VNC_DIR		=>	'/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle',
+	ARD_AGENT_APP	=>	'/System/Library/CoreServices/RemoteManagement/ARDAgent.app',
+
+	ARD_AGTPREFS	=>	'/Library/Preferences/com.apple.ARDAgent.plist',
+	ARD_SYSPREFS	=>	'/Library/Preferences/com.apple.RemoteDesktop.plist',
+	RM_SYSPREFS		=>	'/Library/Preferences/com.apple.RemoteManagement.plist',
+
+	ARD_USRPREFS	=>	'/Users/*/Library/Preferences/com.apple.RemoteDesktop.plist',
+	
+    ARD_RECEIPTS	=>	'/Library/Receipts/RDUpdate*.pkg
+		                 /Library/Receipts/RemoteDesktop*.pkg
+		                 /Library/Receipts/RDPref*.pkg
+		                 /Library/Receipts/RDAdmin*.pkg
+						 /Library/Receipts/RDClient*.pkg
+						 /Library/Receipts/RDDocs*.pkg',
+	SS_AGENT		=>	'/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent',
+	SS_DAEMON		=>	'/System/Library/CoreServices/RemoteManagement/screensharingd.bundle/Contents/MacOS/screensharingd',
+
+};
+
+my $OSComponents = 
+{
+	SYS_UISERVER	=>	'/System/Library/CoreServices/SystemUIServer.app/Contents/MacOS/SystemUIServer',
+};
+
+my $OtherComponents = 
+{
+	PARENT_GUI_APP	=>	'',	## This one can only be specified by caller to new({...=>'...'})
+};
+
+
+sub new
+{
+    my $Success;
+	
+    my $ClassOrObj  = shift;
+    my ($Params)    = {%{shift()}} if UNIVERSAL::isa($_[0], 'HASH');
+	
+    ## Shallow-copy all params from template object and/or optional
+    ## $Params hash into new hash.  DON'T re-use caller's obj or hash.
+
+    my $this =
+    {%{(UNIVERSAL::isa($ClassOrObj, 'HASH') ? $ClassOrObj : {})},
+     %{(UNIVERSAL::isa($Params,     'HASH') ? $Params     : {})}};
+
+    ## Bless the new object into the class
+
+    my $class = ref($ClassOrObj) || $ClassOrObj;
+    bless $this, $class;
+
+    goto done unless $this->initialize();
+
+    $Success = 1;
+  done:
+    return ($Success ? $this : undef);
+}
+
+sub initialize
+{
+    my $this = shift or goto done;
+
+    my $Success;
+
+	## PARENT_GUI_APP may have been specified by caller to new() if
+	## this script is being called from inside a GUI application.
+
+	$this->{PARENT_GUI_APP} ||= '';	
+
+	## The target disk is where we'll look for all the relevant components.
+	$this->{TARGET_DISK}	||= "/";
+
+	## Combine all parts we're interested in into a single hash.
+	
+    $this->{Parts}		 	||= {%$ARDComponents, 
+								 %$OSComponents,
+								 %$OtherComponents};
+	
+	## Prepend the fixed components with TARGET_DISK...
+	map {s{^\s*/}{$this->{TARGET_DISK}}gm} (values %{$this->{Parts}});
+
+	## Add the PARENT_GUI_APP element, whose location does not need adjusting.
+	$this->{Parts}->{PARENT_GUI_APP} = $this->{PARENT_GUI_APP};
+
+	## Get the full ps -auxww table as a list of lines.
+	
+    $this->{AllPSLines}		||= [map {(m{(.*)})[0]} `/bin/ps auxwww`];
+	
+	
+	## Map all PartIDs to a list of their running PIDs (zero, one, or many per part)
+	
+	$this->{PartPSLines}	||= {map {($_ => FindPSLines($this->{Parts}->{$_}, 
+														 $this->{AllPSLines}))}
+								 keys                  %{$this->{Parts}}};
+	
+	## Precalculate several interesting things about the parts as processes
+	
+	$this->{RunningPIDs}	||= {map {($_ => $this->PartRunningPIDs ($_))} keys %{$this->{Parts}}};
+	$this->{ProcessOwner}	||= {map {($_ => $this->PartProcessOwner($_))} keys %{$this->{Parts}}};
+	$this->{ProcessCount}	||= {map {($_ => $this->PartProcessCount($_))} keys %{$this->{Parts}}};
+	$this->{IsRunning}		||= {map {($_ => $this->PartIsRunning   ($_))} keys %{$this->{Parts}}};
+
+	## Precalculate several interesting things about the parts as files
+
+	$this->{Paths}			||= {map {($_ => $this->PartPaths       ($_))} keys %{$this->{Parts}}};
+	$this->{Exists}			||= {map {($_ => $this->PartExists      ($_))} keys %{$this->{Parts}}};	
+
+	## use Data::Dumper; die &Dumper($this);
+	
+    $Success = 1;
+  done:
+    return ($Success);
+}
+
+
+## Methods to get information about parts
+
+sub PartExists
+{
+	my $this = shift;
+	my ($PartID) = @_;
+
+	return(@{$this->PartPaths($PartID)} > 0);
+}
+
+sub PartRunningPIDs
+{
+	my $this = shift;
+	my ($PartID) = @_;
+
+	my $PSLines		= $this->{PartPSLines}->{$PartID} || [];
+
+	## Return a list containing the first integer following the first
+	## word in each matching line in the process table.  These should
+	## be the PIDs.
+
+	my $PIDs		= [map {(m{\w+.*?(\d+)})[0]} @{$this->{PartPSLines}->{$PartID}}];
+
+	return($PIDs);
+}
+
+sub PartProcessOwner
+{
+	my $this = shift;
+	my ($PartID) = @_;
+
+	my $PSLines		= $this->{PartPSLines}->{$PartID} || [];
+	my $FirstLine	= $PSLines->[0];	        
+
+	## Return the first word in the first line.  Could be empty.
+	## Could ignore multiple processes with different owners.
+
+	my $Owner = ($FirstLine =~ m{(\w+)})[0];
+
+	return($Owner);
+}
+
+sub PartProcessCount
+{
+	my $this = shift;
+	my ($PartID) = @_;
+
+	return(@{$this->{RunningPIDs}->{$PartID}} + 0);
+}
+
+
+sub PartIsRunning
+{
+	my $this = shift;
+	my ($PartID) = @_;
+
+	return(@{$this->{RunningPIDs}->{$PartID}} > 0);
+}
+
+sub PartPaths	## A list of paths corresponding to the part.
+{
+	my $this = shift;
+	my ($PartID) = @_;
+
+	## If no wildcards, just return existence of the path name (which may have spaces).
+	return([grep {length && -e} $this->{Parts}->{$PartID}]) if $this->{Parts}->{$PartID} !~ /\*/;
+
+	## Else, if *s are present, treat the path as a string of one or
+	## more path specs, any of which might contain * as a wildcard,
+	## and glob the specs before returning.
+
+	return([grep {length} 										## 4. Discard any empty values
+			map {glob} 											## 3. Run glob on the resulting string
+			map {s{([^/\w\*])}{\\$1}g; $_;} 					## 2. Put backslashes in front of non-(slash, wordchar, star)
+			split(/\s*\n\s*/, $this->{Parts}->{$PartID})]);		## 1. Split on line breaks if any
+}
+
+
+######## Methods to do things to parts
+
+sub KillPart
+{
+	my $this = shift;
+	my ($PartID, $Signal) = @_;
+	
+	my $PartPath   = $this->{Parts}->{$PartID};
+	## print "$PartID: $PartPath\n";
+	my $BaseName = ($PartPath =~ m{.*/(.*)})[0] or next;
+	## print "$BaseName\n";
+	
+	my $Success		= $this->KillAll($Signal, $BaseName);
+	return($Success);
+}
+
+sub KillAll
+{
+	my $this = shift;
+	my ($Signal, $BaseName) = @_;
+	my $AllPSLines     		= [map  {(m{(.*)})[0]}                `/bin/ps -acx`];
+	my $MatchingPSLines		= [grep { m{\Q$BaseName\E\Z}} @$AllPSLines];
+	my $PIDs				= [map  {((m{(\d+)})[0] ? ($1) : ())} @$MatchingPSLines];
+#	print ("/bin/kill   -$Signal    @$PIDs\n") if @$PIDs;
+	system("/bin/kill", "-$Signal", @$PIDs   ) if @$PIDs;
+	return(@$PIDs+0);
+}
+sub RemovePart
+{
+	my $this = shift;
+	my ($PartID) = @_;
+
+	## Consider it successfully removed already if the paths are already gone.
+	return(1) unless $this->PartExists($PartID);
+
+	## If it does exist, get all its paths and remove them
+	my $PartPaths	= $this->PartPaths($PartID);
+	my $Success		= &RemovePaths(@$PartPaths);
+
+	return($Success);
+}
+
+
+######## Utility routines
+
+sub KillPIDs
+{
+	my ($Signal, @PIDs) = @_;
+
+	## Default = 9: kill hard
+
+	$Signal ||= 9;
+
+	return((kill($Signal, @PIDs) + 0) == (@PIDs + 0));
+}
+
+sub RemovePaths
+{
+	my (@Paths) = @_;
+
+	my $Success = 1;
+
+	foreach (@Paths) {$Success &&= RemovePath($_);}
+	
+  done:
+	return($Success);
+}
+
+sub RemovePath
+{
+	my ($Path) = @_;
+	my $Success;
+
+	## If already gone, consider it done.
+
+	return(1) unless -e $Path;
+
+	## Some safety checks: fail if potentially dangerous paths supplied.
+
+	return(0) unless $Path =~ /^\//;	   ## Must be fully qualified (start with slash)
+	return(0) unless length($Path) > 10;   ## Must be at least 10 chars
+	return(0) unless $Path =~ /\w+/;	   ## Must contain some letters and or digits
+	return(0) if     $Path =~ /\.+\//;	   ## May not contain ../ or ./
+	return(0) if     $Path =~ /\*/;		   ## May not contain * (must have already globbed it)
+
+	## Try the removal
+
+	system("/bin/rm", "-rf", $Path);
+
+	## Signal failure if the item is still present after removal attempt.
+	
+	return(0) if     -e $Path;
+		   
+	return(1);
+}
+
+sub FindPSLines		## Find all process lines matching a given path component
+{
+	my ($Path, $AllPSLines) = @_;
+	
+	my $PSLines = [grep {$Path && m{\Q$Path\E}} @$AllPSLines];
+
+	return($PSLines);
+}
+
+
+1;
+
+}
+

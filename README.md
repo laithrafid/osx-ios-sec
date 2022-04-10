@@ -13,7 +13,7 @@ other services that been flagged
 
  
 
-Boot-up
+## Boot-up process
 PROTIP: When the keyboard and mouse are not responsive, hold down the start (power) button for a hard reset.
 
 While pressing the power/start:
@@ -143,7 +143,7 @@ otool -L /usr/bin/login is the macOS equivalent of the Linux ldd command which l
 
 Within folder cd /etc/pam.d, file login contains:
 
-# login: auth account password session
+login: auth account password session
 auth       optional       pam_krb5.so use_kcminit
 auth       optional       pam_ntlm.so try_first_pass
 auth       optional       pam_mount.so try_first_pass
@@ -156,7 +156,7 @@ session    required       pam_uwtmp.so
 session    optional       pam_mount.so
 Each operating sytem has its own set, including use of file pam_env.conf within folder /etc/security.
 
-Root Kits
+# Root Kits
 Leak of documents from CIA’s Embedded Development Branch (EDB) reveal they developed an OS X “implant” (called DerStarke) that includes a kernel code injection module dubbed Bokor and an EFI (Extensible Firmware Interface) persistence module (called DarkMatter). The rootkits targeting firmware on Apple Macbook laptops*
 
 The low-level firmware runs before the operating system and initializes the various hardware components during the system boot process. That allows the rootkit to survive major system updates and even reinstallations.
@@ -164,6 +164,9 @@ The low-level firmware runs before the operating system and initializes the vari
 A module for Intel Security’s CHIPSEC open-source framework finds rogue EFI binaries. CHIPSEC is a set of command-line tools which use low-level interfaces to analyze a system’s hardware, firmware, and platform components. It can be run from Windows, Linux, macOS, or an EFI shell. The new CHIPSEC module allows the user to take a clean EFI image immediately after purchase from the computer manufacturer, extract its contents and build a clean list of the binary files inside. It can then compare that list against the system’s current EFI or against an EFI image previously extracted from a system. If the tool finds any binary files that don’t match the clean EFI list, it’s possible that the firmware has been infected. The rogue files are listed and can then be further analyzed.
 
 See https://support.apple.com/en-us/HT201518
+
+
+
 
 
 

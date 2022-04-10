@@ -1,0 +1,289 @@
+Apr 10 00:31:15 localhost opendirectoryd[56]: [session] ODQueryCreateWithNode completed
+Apr 10 00:31:15 localhost opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 70, PROC: sandboxd ODNodeRelease request, NodeID: 0AE55FF3-5132-4AA9-A0B2-F9950ADCFD2E
+Apr 10 00:31:15 localhost opendirectoryd[56]: [session] ODNodeRelease completed
+Apr 10 00:31:16 localhost opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 57, PROC: apsd ODNodeCreateWithNameAndOptions request, SessionID: 00000000-0000-0000-0000-000000000000, Name: /Search, Options: 0x0
+Apr 10 00:31:16 localhost opendirectoryd[56]: [session] ODNodeCreateWithNameAndOptions failed with result 2000
+Apr 10 00:31:16 localhost opendirectoryd[56]: [session] Received a network change notification
+Apr 10 00:31:19 MacBook-Air mobileassetd[117]: SUPreferenceManager: Service connection invalidated!
+Apr 10 00:31:19 MacBook-Air mobileassetd[117]: SUPreferenceManager: Connection proxy failure with error:Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.softwareupdated was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.softwareupdated was invalidated: failed at lookup with error 3 - No such process.}
+Apr 10 00:31:19 MacBook-Air mobileassetd[117]: SUPreferenceManager: Service connection invalidated!
+Apr 10 00:31:19 MacBook-Air mobileassetd[117]: SUPreferenceManager: Connection proxy failure with error:Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.softwareupdated was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.softwareupdated was invalidated: failed at lookup with error 3 - No such process.}
+Apr 10 00:31:19 MacBook-Air mobileassetd[117]: SUPreferenceManager: Service connection invalidated!
+Apr 10 00:31:19 MacBook-Air mobileassetd[117]: SUPreferenceManager: Connection proxy failure with error:Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.softwareupdated was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.softwareupdated was invalidated: failed at lookup with error 3 - No such process.}
+Apr 10 00:31:20 MacBook-Air opendirectoryd[56]: [session] Processing a network change notification
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 57, PROC: apsd ODNodeCreateWithNameAndOptions request, SessionID: 00000000-0000-0000-0000-000000000000, Name: /Search, Options: 0x0
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] ODNodeCreateWithNameAndOptions failed with result 2000
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 72, PROC: tccd ODNodeCreateWithNameAndOptions request, SessionID: 00000000-0000-0000-0000-000000000000, Name: /Local/Default, Options: 0x0
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] /Local/Default service discovery: successfully completed
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] node assigned UUID - BDB64042-8BD9-47BF-BCE6-C62C5E4F6402
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] ODNodeCreateWithNameAndOptions completed
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 72, PROC: tccd ODNodeCopyDetails request, NodeID: BDB64042-8BD9-47BF-BCE6-C62C5E4F6402, Keys: (
+   "dsAttrTypeStandard:NodePath"
+)
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] found via filename '/System/Volumes/Data/private/var/db/dslocal/nodes/Default/computers/localhost.plist'
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] ODNodeCopyDetails completed, delivered 1 result
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 72, PROC: tccd ODNodeRelease request, NodeID: BDB64042-8BD9-47BF-BCE6-C62C5E4F6402
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] ODNodeRelease completed
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 72, PROC: tccd ODNodeCreateWithNameAndOptions request, SessionID: 00000000-0000-0000-0000-000000000000, Name: /Search, Options: 0x0
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] ODNodeCreateWithNameAndOptions failed with result 2000
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 72, PROC: tccd ODNodeCreateWithNameAndOptions request, SessionID: 00000000-0000-0000-0000-000000000000, Name: /Search, Options: 0x0
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] ODNodeCreateWithNameAndOptions failed with result 2000
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 72, PROC: tccd ODNodeCreateWithNameAndOptions request, SessionID: 00000000-0000-0000-0000-000000000000, Name: /Local/Default, Options: 0x0
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] /Local/Default service discovery: successfully completed
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] node assigned UUID - 6EB56A96-8AF0-4A38-A537-E5EB5E91CE63
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] ODNodeCreateWithNameAndOptions completed
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 72, PROC: tccd ODQueryCreateWithNode request, NodeID: 6EB56A96-8AF0-4A38-A537-E5EB5E91CE63, RecordType(s): dsRecTypeStandard:Users, Attribute: dsAttrTypeStandard:RecordName, MatchType: Any, Equality: CaseIgnore, Value(s): dsRecordsAll, Requested Attributes: dsAttrTypeStandard:GeneratedUID,dsAttrTypeNative:LinkedIdentity,dsAttrTypeStandard:RealName,dsAttrTypeStandard:GroupMembership,dsAttrTypeNative:IsHidden,dsAttrTypeStandard:Picture,dsAttrTypeStandard:UserCertificate,dsAttrTypeStandard:AppleMetaNodeLocation,dsAttrTypeStandard:RecordType,dsAttrTypeStandard:Comment,dsAttrTypeStandard:NestedGroups,dsAttrTypeStandard:PrimaryGroupID,dsAttrTypeStandard:AuthenticationAuthority,dsAttrTypeStandard:Keywords,dsAttrTypeStandard:RecordName,dsAttrTypeStandard:JPEGPhoto,dsAttrTypeNative:_guest,dsAttrTypeStandard:AppleMetaRecordName,dsAttrTypeStandard:UserShell,dsAttrTypeStandard:GroupMembers,dsAttrTypeStandard:UniqueID,dsAttrTypeStandard:EMailAddress,dsAttrTypeStandard:NFSHomeDirectory, Max Results: 2147483647
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] queuing request to connection - 45F2964A-044D-4A7F-9941-BD0C8867F117 - CFBundle 0x7ff74100e9b0 </System/Library/OpenDirectory/Modules/PlistFile.bundle> (bundle, loaded)
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] flushing dirty record '/System/Volumes/Data/private/var/db/dslocal/nodes/Default/computers/localhost' from line 4864
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] re-indexing '/System/Volumes/Data/private/var/db/dslocal/nodes/Default/computers/localhost.plist' with type 'computers'
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] sqlite3_prepare_v2: 21
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] ODQueryCreateWithNode completed, delivered 113 results
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] UID: 0, EUID: 0, GID: 0, EGID: 0, PID: 72, PROC: tccd ODNodeRelease request, NodeID: 6EB56A96-8AF0-4A38-A537-E5EB5E91CE63
+Apr 10 00:31:29 MacBook-Air opendirectoryd[56]: [session] ODNodeRelease completed
+Apr 10 00:31:29 MacBook-Air Installer Progress[53]: IASGetCurrentInstallPhaseList: Unable to get phases
+Apr 10 00:31:29 MacBook-Air Installer Progress[53]: IASGetCurrentInstallPhase: Unable to get the current phase name
+Apr 10 00:31:29 MacBook-Air Installer Progress[53]: currentPhase = "(null)", phases = (null)
+Apr 10 00:31:29 MacBook-Air Installer Progress[53]: Progress app is loading…
+Apr 10 00:31:29 MacBook-Air Installer Progress[53]: Progress app is running with no progress set
+Apr 10 00:31:29 MacBook-Air Installer Progress[53]: Progress app is running…
+Apr 10 00:31:30 MacBook-Air launchprogresswindow[161]: ISAP: Show progress UI called
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: Connected processes {
+   "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667" =     {
+       "Phase Name" = "Launch Progress Window";
+       "Process ID" = 161;
+       UUID = "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667";
+   };
+}
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: Connected processes {
+   "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e54d20>";
+       "Phase Name" = "Launch Progress Window";
+       "Process ID" = 161;
+       UUID = "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667";
+   };
+}
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: IASGetCurrentInstallPhaseList: Unable to get phases
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: IASGetCurrentInstallPhase: Unable to get the current phase name
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: currentPhase = "(null)", phases = (null)
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: Showing Progress UI
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: There are 0 window(s) and 1 display(s), 1 window(s) will be added
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: IOProgressColorTheme is set to 1
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: Created a window at {{0, 0}, {1440, 900}}
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: Status is ""
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: Alternate status is ""
+Apr 10 00:31:30 MacBook-Air Language Chooser[162]: System doesn't have bridgeOS
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: no background for progress added because:
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]:        and / or NOT booting from EFI loginwindow
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: Setting window alpha values to 1.0
+Apr 10 00:31:30 MacBook-Air Installer Progress[53]: Ordering windows front
+Apr 10 00:31:33 MacBook-Air Language Chooser[162]: LCA: most frequent language: en
+Apr 10 00:31:33 MacBook-Air Language Chooser[162]: LCA: most frequent language: fr
+Apr 10 00:31:33 MacBook-Air Language Chooser[162]: LCA: most frequent country code: CA
+Apr 10 00:31:33 MacBook-Air Language Chooser[162]: Using progress phase: Language Chooser
+Apr 10 00:31:33 MacBook-Air Installer Progress[53]: Connected processes {
+   "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e54d20>";
+       "Phase Name" = "Launch Progress Window";
+       "Process ID" = 161;
+       UUID = "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667";
+   };
+   "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F" =     {
+       "Phase Name" = "Language Chooser";
+       "Process ID" = 162;
+       UUID = "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F";
+   };
+}
+Apr 10 00:31:33 MacBook-Air Installer Progress[53]: Connected processes {
+   "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e54d20>";
+       "Phase Name" = "Launch Progress Window";
+       "Process ID" = 161;
+       UUID = "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667";
+   };
+   "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e559a0>";
+       "Phase Name" = "Language Chooser";
+       "Process ID" = 162;
+       UUID = "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F";
+   };
+}
+Apr 10 00:31:33 MacBook-Air opendirectoryd[56]: [session] Received a network change notification
+Apr 10 00:31:33 MacBook-Air Language Chooser[162]: Setup: Factory cable attached: 0
+Apr 10 00:31:33 MacBook-Air Language Chooser[162]: SCNetworkSetEstablishDefaultConfiguration returned 0 error Success!
+Apr 10 00:31:33 MacBook-Air Language Chooser[162]: no reachability flags returned
+Apr 10 00:31:33 MacBook-Air Language Chooser[162]: network reachable?: 0
+Apr 10 00:31:33 MacBook-Air opendirectoryd[56]: [session] Received a network change notification
+Apr 10 00:31:33 MacBook-Air Language Chooser[162]: Waiting for prepaired devices to appear
+Apr 10 00:31:33 MacBook-Air Installer Progress[53]: Setting window alpha values to 1.0
+Apr 10 00:31:34 MacBook-Air opendirectoryd[56]: [session] Received a network change notification
+Apr 10 00:31:34 MacBook-Air opendirectoryd[56]: [session] Received a network change notification
+Apr 10 00:31:34 MacBook-Air opendirectoryd[56]: [session] Received a network change notification
+Apr 10 00:31:35 MacBook-Air Installer Progress[53]: Setting window alpha values to 1.0
+Apr 10 00:31:36 MacBook-Air opendirectoryd[56]: [session] Received a network change notification
+Apr 10 00:31:36 MacBook-Air opendirectoryd[56]: [session] Received a network change notification
+Apr 10 00:31:40 MacBook-Air opendirectoryd[56]: [session] Processing a network change notification
+Apr 10 00:31:43 MacBook-Air Language Chooser[162]: Prepaired wait done.
+Apr 10 00:31:43 MacBook-Air Language Chooser[162]: System doesn't have bridgeOS
+Apr 10 00:31:43 MacBook-Air Language Chooser[162]: Could not read prev-lang:kbd to set keyboard.
+Apr 10 00:31:43 MacBook-Air Language Chooser[162]: Running LCA state machine. State: 3
+Apr 10 00:31:43 MacBook-Air Language Chooser[162]: Running LCA state machine. State: 6
+Apr 10 00:31:43 MacBook-Air Language Chooser[162]: show choice window
+Apr 10 00:31:43 MacBook-Air Language Chooser[162]: No primary language hint found
+Apr 10 00:31:43 MacBook-Air Language Chooser[162]: ISAP: hide progress UI called
+Apr 10 00:31:43 MacBook-Air Installer Progress[53]: Hiding Progress UI
+Apr 10 00:31:43 MacBook-Air Installer Progress[53]: Setting window alpha values to 0.0
+Apr 10 00:31:43 MacBook-Air Installer Progress[53]: Ordering windows out
+Apr 10 00:31:47 MacBook-Air powerd[41]: Assertion Created. Type:UserIsActive Name:'com.apple.iohideventsystem.queue.tickle serviceID:10000037b name:NULL product:Apple Internal Keyb eventType:11' Id:0x900008037 Process:WindowServer [System: DeclUser kDisp]
+Apr 10 00:31:48 MacBook-Air Language Chooser[162]: continue pressed
+Apr 10 00:31:48 MacBook-Air Language Chooser[162]: Running LCA state machine. State: 4
+Apr 10 00:31:48 MacBook-Air Language Chooser[162]: Running LCA state machine. State: 8
+Apr 10 00:31:48 MacBook-Air Language Chooser[162]: System doesn't have bridgeOS
+Apr 10 00:31:48 MacBook-Air Language Chooser[162]: System doesn't have bridgeOS
+Apr 10 00:31:48 MacBook-Air Language Chooser[162]: Launching the Springboard using language code "en"
+Apr 10 00:31:48 MacBook-Air Installer Progress[53]: Unable to quit because there are connected processes
+Apr 10 00:31:48 MacBook-Air Installer Progress[53]: Connected processes {
+   "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e54d20>";
+       "Phase Name" = "Launch Progress Window";
+       "Process ID" = 161;
+       UUID = "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667";
+   };
+   "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e559a0>";
+       "Phase Name" = "Language Chooser";
+       "Process ID" = 162;
+       UUID = "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F";
+   };
+}
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: MAEActivationIsSupportedMacOS() returned false
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: System doesn't have bridgeOS
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: Creating connection
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: Connection = 0x6000006a2260, callers = (
+   "<IASUPCaller: 0x6000035b9340>"
+)
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: client 0x600002299cc0: phaseName = "Install Springboard", registering connection
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: client 0x600002299cc0: phaseName = "Install Springboard" was created
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: client 0x600002299cc0: phaseName = "Install Springboard", hide progress UI called
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: ISAP: hide progress UI called
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: ISAP: hide progress UI called
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: client 0x600002299cc0: phaseName = "Install Springboard" is being released
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: Releasing Connection
+Apr 10 00:31:49 MacBook-Air Installer Progress[53]: Connected processes {
+   "ECF3E05A-2315-4AB8-B534-A5BA1FFD3216" =     {
+       "Phase Name" = "Install Springboard";
+       "Process ID" = 176;
+       UUID = "ECF3E05A-2315-4AB8-B534-A5BA1FFD3216";
+   };
+   "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e54d20>";
+       "Phase Name" = "Launch Progress Window";
+       "Process ID" = 161;
+       UUID = "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667";
+   };
+   "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e559a0>";
+       "Phase Name" = "Language Chooser";
+       "Process ID" = 162;
+       UUID = "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F";
+   };
+}
+Apr 10 00:31:49 MacBook-Air Installer Progress[53]: Connected processes {
+   "ECF3E05A-2315-4AB8-B534-A5BA1FFD3216" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e55cc0>";
+       "Phase Name" = "Install Springboard";
+       "Process ID" = 176;
+       UUID = "ECF3E05A-2315-4AB8-B534-A5BA1FFD3216";
+   };
+   "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e54d20>";
+       "Phase Name" = "Launch Progress Window";
+       "Process ID" = 161;
+       UUID = "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667";
+   };
+   "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e559a0>";
+       "Phase Name" = "Language Chooser";
+       "Process ID" = 162;
+       UUID = "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F";
+   };
+}
+Apr 10 00:31:49 MacBook-Air Installer Progress[53]: Connected processes {
+   "ECF3E05A-2315-4AB8-B534-A5BA1FFD3216" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e55c70>";
+       "Phase Name" = "Install Springboard";
+       "Process ID" = 176;
+       UUID = "ECF3E05A-2315-4AB8-B534-A5BA1FFD3216";
+   };
+   "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e54d20>";
+       "Phase Name" = "Launch Progress Window";
+       "Process ID" = 161;
+       UUID = "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667";
+   };
+   "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e559a0>";
+       "Phase Name" = "Language Chooser";
+       "Process ID" = 162;
+       UUID = "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F";
+   };
+}
+Apr 10 00:31:49 MacBook-Air Installer Progress[53]: Connected processes {
+   "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e54d20>";
+       "Phase Name" = "Launch Progress Window";
+       "Process ID" = 161;
+       UUID = "EEF42CA6-7DC8-4B4B-B844-B9B5113FD667";
+   };
+   "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F" =     {
+       CompletionHandlerKey = "<__NSMallocBlock__: 0x600001e559a0>";
+       "Phase Name" = "Language Chooser";
+       "Process ID" = 162;
+       UUID = "FAF0D0E1-1DBE-4DBE-8889-0B8A24E57D5F";
+   };
+}
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: Setting Safari Start Page: file:///System/Installation/CDIS/Recovery%20Springboard.app/Contents/Resources/en.lproj/RecoveryInformationIntel.html
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: Safari Preferences Container: Does not exist. -- Error:21
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: -[SpringboardController showWindow]
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: -[SpringboardController _launchKeyRecoveryAssistantForAuthentication]
+Apr 10 00:31:49 MacBook-Air Language Chooser[162]: System doesn't have bridgeOS
+Apr 10 00:31:49 MacBook-Air Language Chooser[162]: Not hiding Language Chooser in window counter
+Apr 10 00:31:49 MacBook-Air Language Chooser[162]: Running LCA state machine. State: 9
+Apr 10 00:31:49 MacBook-Air KeyRecoveryAssistant[179]: Running KeyRecoveryAssistant-140 (/AppleInternal/Library/BuildRoots/dd001be1-8f4d-11ec-b343-4a23b0182bfd/Library/Caches/com.apple.xbs/Sources/KeyRecoveryAssistant)
+Apr 10 00:31:49 MacBook-Air KeyRecoveryAssistant[179]: Mode: Authentication
+Apr 10 00:31:49 MacBook-Air KeyRecoveryAssistant[179]: Device does not support activation.
+Apr 10 00:31:49 MacBook-Air OSIESpringboard[176]: -[SpringboardController utilityDidAppear:]: NSConcreteNotification 0x6000037a8940 {name = com.apple.installdvdspringboard.utilityappear; object = <NSConcreteTask: 0x6000014b9f40>}
+Apr 10 00:31:51 MacBook-Air KeyRecoveryAssistant[179]: APFSVolumeGetSiDPState for volume:/dev/disk3s6 (SKAPFSDisk { APFS UUID: 7E4FF82E-A368-42BA-B542-F618B1BE9708, CONTAINER UUID: 2920BA2B-43C4-4C16-BAC2-156EE8C34846, DISK ID: disk3s6 ENCRYPTED: YES } ) returned error: 22
+Apr 10 00:31:51 MacBook-Air KeyRecoveryAssistant[179]: APFSVolumeGetSiDPState for volume:/dev/disk3s1 (SKAPFSDisk { APFS UUID: 49079180-6ADC-44D0-A5AF-AB54AE1B872C, CONTAINER UUID: 2920BA2B-43C4-4C16-BAC2-156EE8C34846, DISK ID: disk3s1 ENCRYPTED: YES } ) returned error: 22
+Apr 10 00:31:51 MacBook-Air KeyRecoveryAssistant[179]: Machine fv auth required:0
+Apr 10 00:31:51 MacBook-Air KeyRecoveryAssistant[179]: setSystemToRecover: unset volume
+Apr 10 00:31:53 MacBook-Air KeyRecoveryAssistant[179]: Hiding APFS volume 'OS - Data', type is non-system
+Apr 10 00:31:53 MacBook-Air KeyRecoveryAssistant[179]: Machine internal system count:1, has internal FV:1
+Apr 10 00:31:53 MacBook-Air KeyRecoveryAssistant[179]: setSystemToRecover: FV volume: 'OS'
+Apr 10 00:31:55 MacBook-Air KeyRecoveryAssistant[179]: Device does not support ownership.
+Apr 10 00:31:55 MacBook-Air KeyRecoveryAssistant[179]: setSystemToRecover: found admin owner: Laith
+Apr 10 00:31:55 MacBook-Air KeyRecoveryAssistant[179]: aks_fv_get_last_known_gp_state returned an error: -536362989
+Apr 10 00:31:55 MacBook-Air KeyRecoveryAssistant[179]: setSystemToRecover: found iCloud recovery user
+Apr 10 00:31:55 MacBook-Air KeyRecoveryAssistant[179]: setSystemToRecover: found iCloud recovery user
+Apr 10 00:31:55 MacBook-Air KeyRecoveryAssistant[179]: Next pane: from <KRAWelcomeViewController: 0x600002558cc0>
+Apr 10 00:31:55 MacBook-Air KeyRecoveryAssistant[179]: Next pane: to <KRASelectAuthRecordViewController: 0x7f937891dac0>
+Apr 10 00:31:55 MacBook-Air KeyRecoveryAssistant[179]: Did select record item: '(null)'
+Apr 10 00:32:04 MacBook-Air KeyRecoveryAssistant[179]: Did select record item: 'Laith'
+Apr 10 00:32:13 MacBook-Air KeyRecoveryAssistant[179]: Has Authenticated: YES
+Apr 10 00:32:13 MacBook-Air KeyRecoveryAssistant[179]: Enabling AMFI permissive trustcache
+Apr 10 00:32:13 MacBook-Air KeyRecoveryAssistant[179]: Validate FV password for user Laith: success
+Apr 10 00:32:13 MacBook-Air KeyRecoveryAssistant[179]: Quitting after successful auth...
+Apr 10 00:32:13 MacBook-Air OSIESpringboard[176]: -[SpringboardController _keyRecoveryAssistantDidTerminateAfterAuthentication:]: NSConcreteNotification 0x6000037b1a60 {name = NSTaskDidTerminateNotification; object = <NSConcreteTask: 0x6000014b9f40>}
+Apr 10 00:32:13 MacBook-Air OSIESpringboard[176]: -[SpringboardController _utilityDidTerminate:fromAuthenticationInRecovery:]: NSConcreteNotification 0x6000037b1a60 {name = NSTaskDidTerminateNotification; object = <NSConcreteTask: 0x6000014b9f40>}
+Apr 10 00:32:13 MacBook-Air OSIESpringboard[176]: KeyRecoveryAssistant authentication was successful (200)
+Apr 10 00:32:13 MacBook-Air OSIESpringboard[176]: -[SpringboardController showWindow]
+Apr 10 00:32:46 MacBook-Air powerd[41]: Assertion Released. Type:ApplePushServiceTask Name:'com.apple.apsd-login' Id:0xb00008013 Process:apsd [System: DeclUser kDisp]

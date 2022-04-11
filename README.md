@@ -26,72 +26,67 @@ Also, Check this for about mac [startup-options](https://www.tekrevue.com/tip/ma
 ## Recovery menu
 Prior to OS X Lion in 2011, one had to insert an OS X DVD or USB installer. That was a hassle but was safer, with Lion's OSX onwards, Apple added a 2GB hidden recovery partition on the Mac’s hard drive to boot up in Recovery Mode (pernmenant bootkits/rootkits vulernability)
 
-### macOS Utilities” appears:
-
-Open a Terminal by clicking “Utilities” menu item:
+macOS Utilities appears: Open a Terminal by clicking “Utilities” menu item:
 
 Also, OS X Internet Recovery loads the recovery information directly from Apple’s servers.
 
 
-Boot loader on Mac
+## important directories in startup/boot process
+* Boot loader on Mac:
 MacOS does not use the GRUB boot loader other Linux machines store in the /boot folder.
 
-MacOS machines boots from the boot.efi binary file within folder
+* MacOS machines boots from the boot.efi binary file within folder
 /System/Library/CoreServices on Intel Macs. Older PowerPC Macs (and an old enough version of OS X) boots from file BootX.
 
-The MacOS kernel, as of Yosemite (version 10.10), is at
+* The MacOS kernel, as of Yosemite (version 10.10), is at
 /System/Library/Kernels/kernel but was just /mach_kernel in older versions.
 
-Apple-supplied loadable kernel modules (known as kernel extensions or kexts) are found in
+* Apple-supplied loadable kernel modules (known as kernel extensions or kexts) are found in
 /System/Library/Extensions/
 
-Third-party extensions are in
+* Third-party extensions are in
 /Library/Extensions/
 
-See Apple’s “The Early Boot Process”.
+See Apple’s [The Early Boot Process](https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/KernelProgramming/booting/booting.html)
 
 
-Bootable from CD
-You’ll be glad you have a bootable CD or USB drive when you are installing macOS Mojave onto multiple Macs and would rather not wait to download the installer on a secondary machine (which you may not have).
+## Bootable from CD
+You’ll be glad you have a bootable CD or USB drive when you are installing macOS Mojave onto multiple Macs and would rather not wait to download the installer on a secondary machine (which you may not have) , so be prepared and do what this says: https://support.apple.com/en-us/HT201372
 
-So be prepared and do what this says: https://support.apple.com/en-us/HT201372
-Create a bootable installer for macOS for each version of MacOS.
+* Create a bootable installer for macOS for each version of MacOS.
 
-The macOS Mojave installer software is just over 6GB, For Mojave, the link is https://apps.apple.com/us/app/macos-mojave/id1398502828?mt=12
+* The macOS Mojave installer software is just over 6GB, For Mojave, the link is https://apps.apple.com/us/app/macos-mojave/id1398502828?mt=12
 
-The macOS Mojave installer software is just over 6GB,
+* The macOS Mojave installer software is just over 6GB,
 
-The download goes into the /Applications folder.
+* The download goes into the /Applications folder.
 
-See articles about this at MacWorld, 9to5mac, and osxdaily.
+* See articles about this at MacWorld, 9to5mac, and osxdaily.
 
 
-Start-up items
+## Start-up items
 MacOS provices its launchctl utility for interaction with the OS X init script system deamon launchd which controls the services that start up on boot.
 
 List what launch scripts are currently loaded:
 
-launchctl list | wc -l
-375 shows up.
+`launchctl list | wc -l` default result mine = 372
 
-Remove the “| wc -l” to see the list.
+Remove the `| wc -l` to see the list.
 
 On mine, the one that’s not from com.apple is:
 
-com.adobe.ARMDCHelper.cc24ae…
-
 Launchd scripts
 Launchd scripts are stored in several folders:
-
+```
 ~/Library/LaunchAgents
 /Library/LaunchAgents
 /Library/LaunchDaemons
 /System/Library/LaunchAgents
 /System/Library/LaunchDaemons
-
+```
 To stop and unload running scripts:
 
-sudo launchctl unload [path/to/script] -w 
+`sudo launchctl unload [path/to/script] -w `
 The -w flag removes the script permanently from your boot sequence.
 
 I like to run this one on all the auto-update “ helpers”=”” created=”” by=”” adobe=”” apps=”” and=”” microsoft=”” office.&LT;=”” p=””>
@@ -104,14 +99,12 @@ http://paul.annesley.cc/2012/09/mac-os-x-launchd-is-cool
 
 Learn how to write your own launchd scripts, explained at Apple’s Developer site.
 
-If you’d prefer a GUI rather than using the command line, buy the $10 Lingon app from:
-
-http://www.peterborgapps.com/lingon
+If you’d prefer a GUI rather than using the command line, buy the $10 [Lingon app](http://www.peterborgapps.com/lingon)
 
 Consider setting up bash scripts to run periodically or at timed intervals in the background, similar to cron jobs on Linux. For example, to start the Apache web server start automatically when you turn on your Mac:
 
+`sudo launchctl load -w /System/Library/LaunchDaemons/org.apache.httpd.plist`
 
-sudo launchctl load -w /System/Library/LaunchDaemons/org.apache.httpd.plist
 Plists
 Plist files are how Macs define services.
 
@@ -158,7 +151,7 @@ Leak of documents from CIA’s Embedded Development Branch (EDB) reveal they dev
 
 The low-level firmware runs before the operating system and initializes the various hardware components during the system boot process. That allows the rootkit to survive major system updates and even reinstallations.
 
-A module for Intel Security’s CHIPSEC open-source framework finds rogue EFI binaries. CHIPSEC is a set of command-line tools which use low-level interfaces to analyze a system’s hardware, firmware, and platform components. It can be run from Windows, Linux, macOS, or an EFI shell. The new CHIPSEC module allows the user to take a clean EFI image immediately after purchase from the computer manufacturer, extract its contents and build a clean list of the binary files inside. It can then compare that list against the system’s current EFI or against an EFI image previously extracted from a system. If the tool finds any binary files that don’t match the clean EFI list, it’s possible that the firmware has been infected. The rogue files are listed and can then be further analyzed.
+A module for Intel Security’s CHIPSEC open-source framework finds rogue EFI binaries. [CHIPSEC](https://github.com/chipsec/chipsec.git) is a set of command-line tools which use low-level interfaces to analyze a system’s hardware, firmware, and platform components. It can be run from Windows, Linux, macOS, or an EFI shell. The new CHIPSEC module allows the user to take a clean EFI image immediately after purchase from the computer manufacturer, extract its contents and build a clean list of the binary files inside. It can then compare that list against the system’s current EFI or against an EFI image previously extracted from a system. If the tool finds any binary files that don’t match the clean EFI list, it’s possible that the firmware has been infected. The rogue files are listed and can then be further analyzed.
 
 See https://support.apple.com/en-us/HT201518
 
@@ -183,7 +176,7 @@ There are three ways a rootkit/excalating of privilage attacks can find its way 
 
 
 
-# Guide to pre-Secure Mac (OSX)
+# Guide to pre/post-instal Secure Mac (OSX)
 
 This guide is a collection of techniques for improving the security and privacy of a modern Apple Macintosh computer ("MacBook") running a recent version of macOS (formerly known as "OS X").
 

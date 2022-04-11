@@ -157,6 +157,24 @@ session    optional       pam_mount.so
 Each operating sytem has its own set, including use of file pam_env.conf within folder /etc/security.
 
 # Root Kits
+As its name suggests, a rootkit is a set of tools that are installed at root level on a computer, with the purpose of hacking into the system, causing damage or stealing data. Rootkits come in different types, and attack Macs as well as PCs.
+
+Root level gives highest administrator privileges on a computer. 
+
+## Types of rootkit
+
+### Hardware or firmware rootkit (Firmkit)
+
+These are installed in the system BIOS of a computer, or in the firmware of a network router. They can be used to intercept data on a disk or transmitted over a network. One example of such firmware is Thunderstrike, discovered in 2014. This malware exploited the Mac’s Thunderbolt port to install code and could install malware on the ROM EFI boot chip on Macs. It was difficult to detect and, once in place, could steal data or spy on activity.
+
+### Bootloader rootkit (bootkit)
+
+The bootloader is the part of the system that loads the operating system when a computer starts up. A bootloader replaces the real bootloader, meaning the malware is activated before the computer has started up.
+
+### Kernel mode rootkit (rootkit)
+The kernel is the core of your Mac's operating system. Based on Unix, it’s the software that makes everything else, including macOS, possible. A Kernel rootkit attacks that software and changes it. By doing that, a hacker can do pretty much anything they want, including spying on you, stealing your data, or locking you out of your Mac altogether.
+
+
 Leak of documents from CIA’s Embedded Development Branch (EDB) reveal they developed an OS X “implant” (called DerStarke) that includes a kernel code injection module dubbed Bokor and an EFI (Extensible Firmware Interface) persistence module (called DarkMatter). The rootkits targeting firmware on Apple Macbook laptops*
 
 The low-level firmware runs before the operating system and initializes the various hardware components during the system boot process. That allows the rootkit to survive major system updates and even reinstallations.
@@ -165,10 +183,28 @@ A module for Intel Security’s CHIPSEC open-source framework finds rogue EFI bi
 
 See https://support.apple.com/en-us/HT201518
 
+## How to avoid a rootkit
+There are three ways a rootkit/excalating of privilage attacks can find its way onto your Mac (like other OS): 
+1. over a network like the internet (remotley) (clickable), (you can avoid) (anyone can do it)
+2. via an external peripheral (plugable/Nearby device a.k.a Evil Maid attack), (you can avoid) (anyone can do it)
+3. over any attack vector (nearby and/or remote) (zero-clicks), (you can't avoid) (only government agencies and maybe Huge Mafies)
+
+* For example [Thunderstrike](https://lowendmac.com/2018/thunderstrike-malware-could-it-still-be-a-threat-to-your-mac/) used the latter mode – a device connected to the Thunderbolt port on a target Mac could exploit the firmware in the port and install malware. However, most such malware uses usb peripherils which can come in many different looks like a memory stick , mouse/keyboard or even a Phone charger like [Hak5 usb charging cable](https://shop.hak5.org/products/o-mg-cable-usb-a) ,  howver there's another way to root and control/transfer such a malware/attack/hack which's over the internet or in somecases like [Pegasus](https://info.lookout.com/rs/051-ESQ-475/images/lookout-pegasus-technical-analysis.pdf) zero clicks attack it can reach you as an sms/whatsapp/telegram message or even phone call from an unkown number can trigger such a vurlenbility that you have no control over [Usually state actors only can do such an attack] (https://citizenlab.ca/2021/09/forcedentry-nso-group-imessage-zero-click-exploit-captured-in-the-wild/)
+
+* Follow these guidelines to avoid a rootkit being installed on your Mac (computer) for non-zero clicks attacks cases :
+
+- Don’t leave your Mac unattended in a public place. If you’re staying in a hotel, lock it in the safe when you’re out of the room.
+- Don’t click on a link in an email or instant message unless you are 100% sure it’s safe.
+- Don’t download attachments in email messages unless you know what they are.
+- Don’t click on links in pop-up adverts that tell you Flash Player or any other piece of software is out of date.
+- Keep your operating system up to date.
+- Don’t ignore warnings from your web browser when it tells you a website you are trying to visit is unsafe. 
 
 
 
 
+
+# Guide to pre-Secure Mac (OSX)
 
 This guide is a collection of techniques for improving the security and privacy of a modern Apple Macintosh computer ("MacBook") running a recent version of macOS (formerly known as "OS X").
 

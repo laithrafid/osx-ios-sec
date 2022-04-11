@@ -1,55 +1,34 @@
-##  Apple Datacollection proxying on macos 
-Blocked all output streams by lulu and flagged multiple times , lulu and tshark gave some unrecognized traffic , and some boot/rootkit evidence found and kext kernel extensions then after pfctl and firewall all a system freeze and kernel crash happened: 
+# OSX/MacOs Boot-up process
+##### PROTIP: When the keyboard and mouse are not responsive, hold down the start (power) button for a hard reset.
 
-to generate logs 
-```
-log show --style syslog --predicate 'senderImagePath contains[cd] networkserviceproxy' --info --debug > networkserviceproxy.log
-```
+## While pressing the power/start:
 
-other services that been flagged 
-*  /usr/libexec/networkserviceproxy
-* /System/Library/PrivateFrameworks/AOSUI.framework/Versions/A/XPCServices/AccountProfileRemoteViewService.xpc
+* Hold down C to boot from CD.
+* Hold down N to boot from network (do a NetBoot from a network server/internet).
+* Hold down option (alt) key for the Mac's Startup Manager to select a (USB/memorycard) startup disk.
+* Hold down shift key to boot in Safe Mode (which does not load start-up items).
+* Hold down ⌘ (command) + R for the [Recovery menu](#recovery-menu).
+* Hold down ⌘ (command) + option + P + R to reset Parameter RAM (PRAM/NVRAM). You'll need to provide your network password again.
+* Hold down control + option + shift + power button to reset SMC.
+* After powering up your Mac, a folder with a question mark means that a boot folder (described below) was not found on the hard disk.
 
+## If pressing the start button does not work:
 
- 
+* Unplug the power cable.
+* Hold down the power button for about 10 seconds and keeping pressing.
+* While still holding the power button down, insert the magsafe power cable. and hold it for another 10 sec.
+* Release the power button and make a "normal" press as if you would normally turn on your computer.
+* If that doesn’t work then try to remove one RAM memory chip and switch places before repeating the above.
 
-## Boot-up process
-PROTIP: When the keyboard and mouse are not responsive, hold down the start (power) button for a hard reset.
-
-While pressing the power/start:
-
-Hold down C to boot from CD.
-Hold down N to boot from network (do a NetBoot from a network server).
-Hold down option (alt) key for the Mac's Startup Manager to select a (USB) startup disk.
-Hold down shift key to boot in Safe Mode (which does not load start-up items).
-Hold down ⌘ (command) + R for the Recovery menu.
-Hold down ⌘ (command) + option + P + R to reset Parameter RAM (PRAM/NVRAM). You'll need to provide your network password again.
-Hold down control + option + shift + power button to reset SMC.
-After powering up your Mac, a folder with a question mark means that a boot folder (described below) was not found on the hard disk.
-
-If pressing the start button does not work:
-
-Unplug the power cable.
-Hold down the power button for about 10 seconds and keeping pressing.
-While still holding the power button down, insert the magsafe power cable. and hold it for another 10 sec.
-Release the power button and make a "normal" press as if you would normally turn on your computer.
-If that doesn’t work then try to remove one RAM memory chip and switch places before repeating the above.
-
-See https://www.tekrevue.com/tip/mac-startup-options/
+Also, Check this for about mac [startup-options](https://www.tekrevue.com/tip/mac-startup-options/)
 
 
-Recovery menu
-Prior to OS X Lion in 2011, one had to insert an OS X DVD or USB installer. That was a hassle.
+## Recovery menu
+Prior to OS X Lion in 2011, one had to insert an OS X DVD or USB installer. That was a hassle but was safer, with Lion's OSX onwards, Apple added a 2GB hidden recovery partition on the Mac’s hard drive to boot up in Recovery Mode (pernmenant bootkits/rootkits vulernability)
 
-With Lion onwards, Apple added a 2GB hidden recovery partition on the Mac’s hard drive to boot up in Recovery Mode.
-
-“macOS Utilities” appears:
-
-macos-bootup-utils-640x347-74954.jpg
+### macOS Utilities” appears:
 
 Open a Terminal by clicking “Utilities” menu item:
-
-macos-bootup-utils-640x196-39501.jpg
 
 Also, OS X Internet Recovery loads the recovery information directly from Apple’s servers.
 

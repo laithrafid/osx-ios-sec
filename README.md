@@ -6,15 +6,19 @@
 5. GPS of Device get workedout in idle
 6. Leak of inforamation and data in devices
 7. ARD, ssmenuagent , RTBUDDY/RTBuddyv3 , vnc , Unkown KEXT, reverse shell over TCP(https) , reverse shell over UDP(dns) < base protocols , process and libs for (pegasus and otherspyware)
-8. lots of alerts of same type which's (connection to websit is not secure) in spite of that you're visiting a well-known secured https sites like google.com or linkedin.com.
-9. forensics and collection of attack vectors evidence , example of attack vectors:
+8. lots of alerts of same type which's (connection to websit is not secure) in spite of that you're visiting a well-known secured https sites like google.com or linkedin.com, so it either there's a Man in the middle attack where your traffic getting sniffed and maybe droped or server of linkedin is down (you can check from other devices at the same moment) then your device is compromised if you can connect from other devices within same network.
+9. lots of errors on regular basis in authentication/login to wellknown services (linkedin,facebook,twitter....) that other peolpe around you not facing, commenting and editting and other time bounds traffic , this means that a manual proxying in the work where not all of your traffic are reaching the other side as it should be.
+10. updates of OS and Apps doesn't show up on your device at the same time like exactly the same devices and same region and version.
+11. all indicators must have pattern of occurance , because with systems things can go wrong , however if there's some sort of pattern then, either a bug or it's an attack
+12. forensics and collection of attack vectors evidences can be very hard if things attacks done by professionals however it can be done , example of attack vectors:
 * emails (check DKIM/SPF/DMARC records [dmarcian](https://dmarcian.com/domain-checker/?domain=) or [mxtoolbox](https://mxtoolbox.com/?gclid=Cj0KCQjwxtSSBhDYARIsAEn0thRQO-5XwIfhdFAyqFWp_EC8LL8BvRWmX8Fu7wT3mWVLDpLcZwaOZNIaArptEALw_wcB))
 * SMS (links or code to triger os/hardware vulnerability) (Check [Citizenlab](https://github.com/citizenlab/malware-indicators.git) database on github or download malware app from app store [lookout](https://protection.lookout.com/#plan_cards) for ios and for further forensics [imazing](https://imazing.com/?gclid=Cj0KCQjwxtSSBhDYARIsAEn0thQ3G-e4CB1VgejhpgXJI55VhltYSKhnaDIkc2WWSvsUMIUX1klq0jkaAvZCEALw_wcB) added support for [MVT](https://github.com/mvt-project/mvt.git))
 * Imessages/whatsapp/Telegram... othergrams (photos, videos , links , PDFs , direct code(stringofnumbers/characters to trigger os/app/hardware zero-click vulnerability)
   - (After May 2020 whatsapp added end-to-end encription but still there's a a way to impersonate if you controll an end) 
 * phone call (uknown number) with a specific number of rings (like dialup)
 * nearby/local/evil maid attack (usb {[phone chargers](https://shop.hak5.org/products/o-mg-cable-usb-a), [usb sticks](https://shop.hak5.org/products/o-mg-cable-programmer-usb-a), [mouse](https://zsecurity.org/hacking-wireless-mouse-or-keyboard-mousejack-attack/) [keyboard/keyloggers](https://www.youtube.com/watch?v=DCqi_iCgT8w) } , same local network ethernet and wireless collection [hak5 tabs](https://shop.hak5.org/collections/lan-taps) and [pineapple](https://shop.hak5.org/products/wifi-pineapple) , [thunderbolt adapter](https://www.wired.com/story/thunderspy-thunderbolt-evil-maid-hacking/), MITM devices and collections, [bluetooth](https://hackernoon.com/how-to-hack-bluetooth-devices-5-common-vulnerabilities-ng2537af))
-10. post-attack goal is to make attack [rootkits/bootkits/firmkits](#root-kits) persistent then isolate computers with dns hijacking [check dns resolvers `scutil --dns`] then control traffic proxy&netfiltering and Total control of device (check firmware, EFI/BIOS and bootup process)
+
+13. post-attack goal is to make attack like [rootkits/bootkits/firmkits](#root-kits) persistent then steps into isolating device from Appstore with dns hijacking or maybe proxy of all app updates but not os level updates [check dns resolvers `scutil --dns`](#dns) afterthat control traffic by a manual proxy and netfiltering which will give attacker total control of device/s (check firmware, EFI/BIOS and bootup process blow and how to secure aginst some of these attack vectors)
 
 # OSX/MacOs Boot-up process
 ##### PROTIP: When the keyboard and mouse are not responsive, hold down the start (power) button for a hard reset.

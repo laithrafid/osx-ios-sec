@@ -1,3 +1,16 @@
+# Indicators of compromise by Unauthorized access/hacked
+1. Fan starting/overheating when ram and cpu has almost zero load over idle 
+2. sudden system freezes 
+3. ARD, ssmenuagent , RTBuddyv3 , vnc , reverse shell over https , reverse shell over Udp(dns) < base protocols and libs for (pegasus and otherspyware)
+4. forensics and collection of attack vectors evidence , example of attack vectors:
+* emails (check DKIM/SPF/DMARC records [dmarcian](https://dmarcian.com/domain-checker/?domain=) or [mxtoolbox](https://mxtoolbox.com/?gclid=Cj0KCQjwxtSSBhDYARIsAEn0thRQO-5XwIfhdFAyqFWp_EC8LL8BvRWmX8Fu7wT3mWVLDpLcZwaOZNIaArptEALw_wcB))
+* SMS (links or code to triger os/hardware vulnerability) (Check [Citizenlab](https://github.com/citizenlab/malware-indicators.git) database on github or download malware app from app store [lookout](https://protection.lookout.com/#plan_cards) for ios and for further forensics [imazing](https://imazing.com/?gclid=Cj0KCQjwxtSSBhDYARIsAEn0thQ3G-e4CB1VgejhpgXJI55VhltYSKhnaDIkc2WWSvsUMIUX1klq0jkaAvZCEALw_wcB) added support for [MVT](https://github.com/mvt-project/mvt.git))
+* Imessages/whatsapp/Telegram... othergrams (photos, videos , links , PDFs , direct code(stringofnumbers/characters to trigger os/app/hardware zero-click vulnerability)
+  - (After May 2020 whatsapp added end-to-end encription but still there's a a way to impersonate if you controll an end) 
+* phone call (uknown number) with a specific number of rings (like dialup)
+* nearby/local/evil maid attack (usb {[phone chargers](https://shop.hak5.org/products/o-mg-cable-usb-a), [usb sticks](https://shop.hak5.org/products/o-mg-cable-programmer-usb-a), [mouse](https://zsecurity.org/hacking-wireless-mouse-or-keyboard-mousejack-attack/) [keyboard/keyloggers](https://www.youtube.com/watch?v=DCqi_iCgT8w) } , same local network ethernet and wireless collection [hak5 tabs](https://shop.hak5.org/collections/lan-taps) and [pineapple](https://shop.hak5.org/products/wifi-pineapple) , [thunderbolt adapter](https://www.wired.com/story/thunderspy-thunderbolt-evil-maid-hacking/), MITM devices and collections, [bluetooth](https://hackernoon.com/how-to-hack-bluetooth-devices-5-common-vulnerabilities-ng2537af))
+5. post-attack make [rootkits/bootkits/firmkits](#root-kits) persistent then isolate computers (dns hijacking > appstorelinks > Total simulation)
+
 # OSX/MacOs Boot-up process
 ##### PROTIP: When the keyboard and mouse are not responsive, hold down the start (power) button for a hard reset.
 

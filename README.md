@@ -20,8 +20,116 @@
 
 13. post-attack goal is to make attack like [rootkits/bootkits/firmkits](#root-kits) persistent then steps into isolating device from Appstore with dns hijacking or maybe proxy of all app updates but not os level updates [check dns resolvers `scutil --dns`](#dns) afterthat control traffic by a manual proxy and netfiltering which will give attacker total control of device/s (check firmware, EFI/BIOS and bootup process blow and how to secure aginst some of these attack vectors)
 
-# OSX/MacOs Boot-up process
+# Early Boot Process
+
+#### 1.Boot ROM
+The very first code executed by a device’s processor when it first boots. As an integral part of the processor, When the power to a Macintosh computer is turned on, the BootROM firmware is activated. BootROM (which is part of the computer’s hardware) has two primary responsibilities:
+* it initializes system hardware.
+* it selects an operating system to run.
+
+BootROM has two components to help it carry out these functions:
+* POST (Power-On Self Test) initializes some hardware interfaces and verifies that sufficient memory is available and in a good state.
+* EFI does basic hardware initialization and selects which operating system to use.
+
+If multiple installations of OS X are available, BootROM chooses the one that was last selected by the Startup Disk System Preference. The user can override this choice by holding down the Option key while the computer boots, which causes EFI to display a screen for choosing the boot volume.
+
+#### 2.The Boot Loader
+Once BootROM is finished and an OS X partition has been selected, control passes to the boot.efi boot loader. The principal job of this boot loader is to load the kernel environment. As it does this, the boot loader draws the “booting” image on the screen.
+
+If full-disk encryption is enabled, the boot loader is responsible for drawing the login UI and prompting for the user’s password, which needed to access the encrypted disk to boot from it. (This UI is drawn by loginwindow otherwise.)
+
+In the simplest case, the boot loader can be found in the /System/Library/CoreServices directory on the root partition, in a file named boot.efi.
+
+
+#### 3. Rooting
+once BootROM is finished and an OS X partition has been selected, control passes to the boot.efi boot loader. The principal job of this boot loader is to load the kernel environment. As it does this, the boot loader draws the “booting” image on the screen.
+
+If full-disk encryption is enabled, the boot loader is responsible for drawing the login UI and prompting for the user’s password, which needed to access the encrypted disk to boot from it. (This UI is drawn by loginwindow otherwise.)
+
+In the simplest case, the boot loader can be found in the `/System/Library/CoreServices` directory on the root partition, in a file named boot.efi.
+
+In order to speed up boot time, the boot loader uses several caches. The contents and location of these caches varies between versions of OS X, but knowing some details about the caching may be helpful when debugging kernel extensions.
+
+After you install or modify a kernel extension, touch the `/System/Library/Extensions` directory; the system rebuilds the caches automatically.
+
+In OS X v10.7, the boot loader looks for the unified prelinked kernel. This cache contains all kernel extensions that may be needed to boot a Mac with any hardware configuration, with the extensions already linked against the kernel. It is located at `/System/Library/Caches/com.apple.kext.caches/Startup/kernelcache.`
+
+In OS X v10.6 and earlier, the boot loader first looks for the prelinked kernel (also called the kernel cache). This cache contains exactly the set of kernel extensions that were needed during the previous system startup, already linked against the kernel. If the prelinked kernel is missing or unusable (for example, because a hardware configuration has changed), the booter looks for the mkext cache, which contains all kernel extensions that may be needed to boot the system. Using the mkext cache is much slower because the linker must be run. On OS X v10.5 and v10.6, these caches are located in `/System/Library/Caches/com.apple.kext.caches/Startup/`; on previous versions of OS X, it was located at `/System/Library/Caches/com.apple.kernelcaches/`.
+
+Finally, if the caches cannot be used, the boot loader searches /System/Library/Extensions for drivers and other kernel extensions whose OSBundleRequired property is set to a value appropriate to the type of boot (for example, local or network boot). This process is very slow, because the Info.plist file of every kernel extension must be parsed, and then the linker must be run.
+
+### Boot process for an Intel-based Mac
+![image](https://user-images.githubusercontent.com/63671111/163215825-3d41c496-e4b1-40fe-afe7-0cbf24df412c.png)
+
+#### Intel-based Mac with an Apple T2 Security Chip
+When an Intel-based Mac computer with the Apple T2 Security Chip is turned on, the chip performs a secure boot from its Boot ROM in the same fashion as iPhone, iPad, and a Mac with Apple silicon. This verifies the iBoot bootloader and is the first step in the chain of trust. iBoot checks the kernel and kernel extension code on the T2 chip, which then checks the Intel UEFI firmware. The UEFI firmware and the associated signature are initially available only to the T2 chip.
+
+The macOS T2 secure boot chain.
+macOS T2 secure boot chain.
+After verification, the UEFI firmware image is mapped into a portion of the T2 chip memory. This memory is made available to the Intel CPU through the enhanced Serial Peripheral Interface (eSPI). When the Intel CPU first boots, it fetches the UEFI firmware through the eSPI from the integrity-checked, memory-mapped copy of the firmware located on the T2 chip.
+
+The evaluation of the chain of trust continues on the Intel CPU, with the UEFI firmware evaluating the signature for boot.efi, which is the macOS bootloader. The Intel-resident macOS secure boot signatures are stored in the same Image4 format used for iOS, iPadOS, and T2 chip secure boot, and the code that parses the Image4 files is the same hardened code from the current iOS and iPadOS secure boot implementation. Boot.efi in turn verifies the signature of a new file, called immutablekernel. When secure boot is enabled, the immutablekernel file represents the complete set of Apple kernel extensions required to boot macOS. The secure boot policy terminates at the handoff to the immutablekernel, and after that, macOS security policies (such as System Integrity Protection and signed kernel extensions) take effect.
+
+If there are any errors or failures in this process, the Mac enters Recovery mode, Apple T2 Security Chip Recovery mode, or Apple T2 Security Chip Device Firmware Upgrade (DFU) mode mode.
+
+
+#### Intel-based Mac computers without a T2 chip
+An Intel-based Mac without a T2 chip doesn’t support secure boot. Therefore the UEFI firmware loads the macOS booter (boot.efi) from the file system without verification, and the booter loads the kernel (prelinkedkernel) from the file system without verification. To protect the integrity of the boot chain, users should enable all of the following security mechanisms:
+
+* System Integrity Protection (SIP): Enabled by default, this protects the booter and kernel against malicious writes from within a running macOS.
+
+* FileVault: This can be enabled in two ways: by the user or by a mobile device management (MDM) administrator. This protects against a physically present attacker using Target Disk Mode to overwrite the booter.
+
+* Firmware Password: This can be enabled in two ways: by the user or by an MDM administrator. This helps prevent a physically present attacker from launching alternate boot modes such as recoveryOS, Single User Mode, or Target Disk Mode from which the booter can be overwritten. This also helps prevent booting from alternate media, by which an attacker could run code to overwrite the booter.
+
+![image](https://help.apple.com/assets/5E85E50A094622E7303B3BD6/5E85E511094622E7303B3BDF/en_US/4868377e07e2a23430c466ccb6f10d0d.png)
+The unlocking process of an Intel-based Mac without a T2 chip.
+
+#### Boot process for a Mac with Apple silicon
+When a Mac with Apple silicon is turned on, it performs a boot process much like that of iPhone and iPad.
+![image](https://user-images.githubusercontent.com/63671111/163217208-837bf6f7-13df-4257-9ea9-ba5359698ef5.png)
+Boot process steps when a Mac with Apple silicon is started.
+The chip executes code from the Boot ROM in the first step in the chain of trust. macOS secure boot on a Mac with Apple silicon verifies not only the operating system code itself, but also the security policies and even kexts (supported, though not recommended) configured by authorized users.
+
+When LLB is launched, it then verifies the signatures and loads system-paired firmware for intra-SoC cores such as the storage, display, system management, and Thunderbolt controllers. LLB is also responsible for loading the LocalPolicy, which is a file signed by the Secure Enclave Processor. The LocalPolicy file describes the configuration that the user has chosen for the system boot and runtime security policies. The LocalPolicy has the same data structure format as all other boot objects, but it’s signed locally by a private key that’s available only within a particular computer’s Secure Enclave instead of being signed by a central Apple server (like software updates).
+
+To help prevent replay of any previous LocalPolicy, LLB must look up a nonce from the Secure Enclave–attached Secure Storage Component. To do this, it uses the Secure Enclave Boot ROM and makes sure the nonce in the LocalPolicy matches the nonce in the Secure Storage Component. This helps prevent an old LocalPolicy—which could have been configured for lower security—from being reapplied to the system after security has been upgraded. The result is that secure boot on a Mac with Apple silicon helps protect not only against rollback of operating system versions but also against security policy downgrades.
+
+The LocalPolicy file captures whether the operating system is configured for Full, Reduced, or Permissive security.
+
+Full Security: The system behaves like iOS and iPadOS, and allows only booting software which was known to be the latest that was available at install time.
+
+Reduced Security: LLB is directed to trust “global” signatures, which are bundled with the operating system. This allows the system to run older versions of macOS. Because older versions of macOS inevitably have unpatched vulnerabilities, this security mode is described as Reduced. This is also the policy level required to support booting kernel extensions (kexts).
+
+Permissive Security: The system behaves like Reduced Security in that it uses global signature verification for iBoot and beyond, but it also tells iBoot that it should accept some boot objects being signed by the Secure Enclave with the same key used to sign the LocalPolicy. This policy level supports users that are building, signing, and booting their own custom XNU kernels.
+
+If the LocalPolicy indicates to LLB that the selected operating system is running in Full Security, LLB evaluates the personalized signature for iBoot. If it’s running in Reduced Security or Permissive Security, it evaluates the global signature. Any signature verification errors cause the system to boot to recoveryOS to provide repair options.
+
+After LLB hands off to iBoot, it loads macOS-paired firmware such as that for the Secure Neural Engine, the Always On Processor, and other firmware. iBoot also looks at information about the LocalPolicy handed to it from LLB. If the LocalPolicy indicates that there should be an Auxiliary Kernel Collection (AuxKC), iBoot looks for it on the file system, verifies that it was signed by the Secure Enclave with the same key as the LocalPolicy, and verifies that its hash matches a hash stored in the LocalPolicy. If the AuxKC is verified, iBoot places it into memory with the Boot Kernel Collection before locking the full memory region covering the Boot Kernel Collection and AuxKC with the System Coprocessor Integrity Protection (SCIP). If the policy indicates that an AuxKC should be present but it isn’t found, the system continues to boot into macOS without it. iBoot is also responsible for verifying the root hash for the signed system volume (SSV), to check that the file system the kernel will mount is fully integrity verified.
+
+### Boot process for iOS and iPadOS devices
+
+Each step of the startup process contains components that are cryptographically signed by Apple to enable integrity checking so that boot proceeds only after verifying the chain of trust. These components include the bootloaders, the kernel, kernel extensions, and cellular baseband firmware. This secure boot chain is designed to verify that the lowest levels of software aren’t tampered with.
+
+When an iOS or iPadOS device is turned on, its Application Processor immediately executes code from read-only memory referred to as Boot ROM. This immutable code, known as the hardware root of trust, is laid down during chip fabrication and is implicitly trusted. The Boot ROM code contains the Apple Root certificate authority (CA) public key—used to verify that the iBoot bootloader is signed by Apple before allowing it to load. This is the first step in the chain of trust, in which each step checks that the next is signed by Apple. When the iBoot finishes its tasks, it verifies and runs the iOS or iPadOS kernel. For devices with an A9 or earlier A-series processor, an additional Low-Level Bootloader (LLB) stage is loaded and verified by the Boot ROM and in turn loads and verifies iBoot.
+
+A failure to load or verify following stages is handled differently depending on the hardware:
+
+* Boot ROM can’t load LLB (older devices): Device Firmware Upgrade (DFU) mode
+* LLB or iBoot: Recovery mode
+
+In either case, the device must be connected to the Finder (macOS 10.15 or later) or iTunes (in macOS 10.14 or earlier) through USB and restored to factory default settings.
+
+The Boot Progress Register (BPR) is used by the Secure Enclave to limit access to user data in different modes and is updated before entering the following modes:
+
+* DFU mode: Set by Boot ROM on devices with an Apple A12 or later SoCs
+* Recovery mode: Set by iBoot on devices with Apple A10, S2, or later SoCs
+
+On devices with cellular access, a cellular baseband subsystem performs additional secure booting using signed software and keys verified by the baseband processor.
+The Secure Enclave also performs a secure boot that checks its software (sepOS) is verified and signed by Apple.
+
 ##### PROTIP: When the keyboard and mouse are not responsive, hold down the start (power) button for a hard reset.
+
 
 ## While pressing the power/start:
 
@@ -30,6 +138,7 @@
 * Hold down option (alt) key for the Mac's Startup Manager to select a (USB/memorycard) startup disk.
 * Hold down shift key to boot in Safe Mode (which does not load start-up items).
 * Hold down ⌘ (command) + R for the [Recovery menu](#recovery-menu).
+* hold down option (alt) + R for recovery from internet (downlaoded over http)
 * Hold down ⌘ (command) + option + P + R to reset Parameter RAM (PRAM/NVRAM). You'll need to provide your network password again.
 * Hold down control + option + shift + power button to reset SMC.
 * After powering up your Mac, a folder with a question mark means that a boot folder (described below) was not found on the hard disk.

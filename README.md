@@ -1,4 +1,112 @@
-# Indicators of compromise by Unauthorized access/hacked
+# Guide to pre/post-instal Secure Mac (OSX)
+
+This guide is a collection of techniques for improving the security and privacy of a modern Apple Macintosh computer ("MacBook") running a recent version of macOS (formerly known as "OS X").
+
+This guide is targeted to power users who wish to adopt enterprise-standard security, but is also suitable for novice users with an interest in improving their privacy and security on a Mac.
+
+A system is only as secure as its administrator is capable of making it. There is no one single technology, software, nor technique to guarantee perfect computer security; a modern operating system and computer is very complex, and requires numerous incremental changes to meaningfully improve one's security and privacy posture.
+
+This guide is provided on an 'as is' basis without any warranties of any kind. Only **you** are responsible if you break anything or get in any sort of trouble by following this guide.
+
+To suggest an improvement, please send a pull request or [open an issue](https://github.com/drduh/macOS-Security-and-Privacy-Guide/issues).
+
+This guide is also available in [简体中文](https://github.com/drduh/macOS-Security-and-Privacy-Guide/blob/master/README-cn.md).
+
+- [Basics](#basics)
+- [Early boot process](#early-boot-process)
+- [rootkits](#root-kits)
+- [startup-options](#startup-options)
+- [Preparing and installing macOS](#preparing-and-installing-macos)
+  * [Verifying installation integrity](#verifying-installation-integrity)
+  * [Creating a bootable USB installer](#creating-a-bootable-usb-installer)
+  * [Creating an install image](#creating-an-install-image)
+    + [Manual way](#manual-way)
+  * [Target disk mode](#target-disk-mode)
+  * [Creating a recovery partition](#creating-a-recovery-partition)
+  * [Virtualization](#virtualization)
+- [First boot](#first-boot)
+- [System activation](#system-activation)
+- [Admin and standard user accounts](#admin-and-standard-user-accounts)
+  * [Caveats](#caveats)
+  * [Setup](#setup)
+- [Full disk encryption](#full-disk-encryption)
+- [Firmware](#firmware)
+- [Firewall](#firewall)
+  * [Application layer firewall](#application-layer-firewall)
+  * [Third party firewalls](#third-party-firewalls)
+  * [Kernel level packet filtering](#kernel-level-packet-filtering)
+- [Services](#services)
+- [Spotlight Suggestions](#spotlight-suggestions)
+- [Homebrew](#homebrew)
+- [DNS](#dns)
+    + [Hosts file](#hosts-file)
+    + [dnscrypt](#dnscrypt)
+    + [Dnsmasq](#dnsmasq)
+      - [Test DNSSEC validation](#test-dnssec-validation)
+- [Captive portal](#captive-portal)
+- [Certificate authorities](#certificate-authorities)
+- [OpenSSL](#openssl)
+- [Curl](#curl)
+- [Web](#web)
+  * [Privoxy](#privoxy)
+  * [Browser](#browser)
+    + [Firefox](#firefox)
+    + [Chrome](#chrome)
+    + [Safari](#safari)
+    + [Other Web browsers](#other-web-browsers)
+    + [Web browsers and privacy](#web-browsers-and-privacy)
+  * [Plugins](#plugins)
+- [Tor](#tor)
+- [VPN](#vpn)
+- [PGP/GPG](#pgpgpg)
+- [OTR](#otr)
+- [Viruses and malware](#viruses-and-malware)
+- [System Integrity Protection](#system-integrity-protection)
+- [Gatekeeper and XProtect](#gatekeeper-and-xprotect)
+- [Metadata and artifacts](#metadata-and-artifacts)
+- [Passwords](#passwords)
+- [Backup](#backup)
+- [Wi-Fi](#wi-fi)
+- [SSH](#ssh)
+- [Physical access](#physical-access)
+- [System monitoring](#system-monitoring)
+  * [OpenBSM audit](#openbsm-audit)
+  * [DTrace](#dtrace)
+  * [Execution](#execution)
+  * [Network](#network)
+- [Binary Whitelisting](#binary-whitelisting)
+- [Miscellaneous](#miscellaneous)
+- [Related software](#related-software)
+- [Additional resources](#additional-resources)
+
+## Basics
+
+Standard security best practices apply:
+
+* Create a [threat model](https://www.owasp.org/index.php/Application_Threat_Modeling) 
+	* What are you trying to protect and from whom? Is your adversary a [three letter agency](https://theintercept.com/document/2015/03/10/strawhorse-attacking-macos-ios-software-development-kit/) (if so, you may want to consider using [OpenBSD](https://www.openbsd.org/) instead); a nosy eavesdropper on the network; or a determined [apt](https://en.wikipedia.org/wiki/Advanced_persistent_threat) orchestrating a campaign against you?
+	* [Recognize threats](https://www.usenix.org/system/files/1401_08-12_mickens.pdf) and how to reduce attack surface against them.
+
+* Keep the system up to date
+	* Patch the base operating system and all third party software.
+	* macOS system updates can be completed using the App Store application, or the `softwareupdate` command-line utility - neither requires registering an Apple account. Updates can also be downloaded directly from Apple's support site.
+	* Subscribe to announcement mailing lists like [Apple security-announce](https://lists.apple.com/mailman/listinfo/security-announce).
+
+* Encrypt sensitive data at rest
+	* In addition to full disk encryption, consider creating one or several encrypted partitions or volumes to store passwords, cryptographic keys, personal documents, etc. at rest.
+	* This will mitigate damage in case of compromise and data theft.
+
+* Assure data availability
+	* Create [regular backups](https://www.amazon.com/o/ASIN/0596102461/backupcentral) of your data and be ready to format and re-install the operating system in case of compromise.
+	* Always encrypt locally before copying backups to external media or the "cloud".
+	* Verify backups work by testing them regularly, for example by accessing certain files or performing a hash based comparison.
+
+* Click carefully
+	* Ultimately, the security of a system can be reduced to its administrator.
+	* Care should be taken when installing new software. Always prefer [free](https://www.gnu.org/philosophy/free-sw.en.html) and open source software ([which macOS is not](https://superuser.com/questions/19492/is-mac-os-x-open-source)).
+
+# Threat model 
+## Indicators of a hack
 1. Fan starting/overheating when ram and cpu has almost zero load over idle.
 2. Run out of battery faster.
 3. sudden system freezes.
@@ -128,21 +236,75 @@ The Boot Progress Register (BPR) is used by the Secure Enclave to limit access t
 On devices with cellular access, a cellular baseband subsystem performs additional secure booting using signed software and keys verified by the baseband processor.
 The Secure Enclave also performs a secure boot that checks its software (sepOS) is verified and signed by Apple.
 
+
+
+
+# Root Kits
+As its name suggests, a rootkit is a set of tools that are installed at root level on a computer, with the purpose of hacking into the system, causing damage or stealing data. Rootkits come in different types, and attack Macs as well as PCs.
+
+Root level gives highest administrator privileges on a computer. 
+
+## Types of rootkit
+
+### Hardware or firmware rootkit (Firmkit)
+
+These are installed in the system BIOS of a computer, or in the firmware of a network router. They can be used to intercept data on a disk or transmitted over a network. One example of such firmware is Thunderstrike, discovered in 2014. This malware exploited the Mac’s Thunderbolt port to install code and could install malware on the ROM EFI boot chip on Macs. It was difficult to detect and, once in place, could steal data or spy on activity.
+
+### Bootloader rootkit (bootkit)
+
+The bootloader is the part of the system that loads the operating system when a computer starts up. A bootloader replaces the real bootloader, meaning the malware is activated before the computer has started up.
+
+### Kernel mode rootkit (rootkit)
+The kernel is the core of your Mac's operating system. Based on Unix, it’s the software that makes everything else, including macOS, possible. A Kernel rootkit attacks that software and changes it. By doing that, a hacker can do pretty much anything they want, including spying on you, stealing your data, or locking you out of your Mac altogether.
+
+
+Leak of documents from CIA’s Embedded Development Branch (EDB) reveal they developed an OS X “implant” (called DerStarke) that includes a kernel code injection module dubbed Bokor and an EFI (Extensible Firmware Interface) persistence module (called DarkMatter). The rootkits targeting firmware on Apple Macbook laptops*
+
+The low-level firmware runs before the operating system and initializes the various hardware components during the system boot process. That allows the rootkit to survive major system updates and even reinstallations.
+
+A module for Intel Security’s CHIPSEC open-source framework finds rogue EFI binaries. [CHIPSEC](https://github.com/chipsec/chipsec.git) is a set of command-line tools which use low-level interfaces to analyze a system’s hardware, firmware, and platform components. It can be run from Windows, Linux, macOS, or an EFI shell. The new CHIPSEC module allows the user to take a clean EFI image immediately after purchase from the computer manufacturer, extract its contents and build a clean list of the binary files inside. It can then compare that list against the system’s current EFI or against an EFI image previously extracted from a system. If the tool finds any binary files that don’t match the clean EFI list, it’s possible that the firmware has been infected. The rogue files are listed and can then be further analyzed.
+
+See https://support.apple.com/en-us/HT201518
+
+## How to avoid a rootkit
+There are three ways a rootkit/excalating of privilage attacks can find its way onto your Mac (like other OS): 
+1. over a network like the internet (remotley) (clickable), (you can avoid) (anyone can do it)
+2. via an external peripheral (plugable/Nearby device a.k.a Evil Maid attack), (you can avoid) (anyone can do it)
+3. over any attack vector (nearby and/or remote) (zero-clicks), (you can't avoid) (only government agencies and maybe Huge Mafies)
+
+* For example [Thunderstrike](https://lowendmac.com/2018/thunderstrike-malware-could-it-still-be-a-threat-to-your-mac/) used the latter mode – a device connected to the Thunderbolt port on a target Mac could exploit the firmware in the port and install malware. However, most such malware uses usb peripherils which can come in many different looks like a memory stick , mouse/keyboard or even a Phone charger like [Hak5 usb charging cable](https://shop.hak5.org/products/o-mg-cable-usb-a) ,  howver there's another way to root and control/transfer such a malware/attack/hack which's over the internet or in somecases like [Pegasus](https://info.lookout.com/rs/051-ESQ-475/images/lookout-pegasus-technical-analysis.pdf) zero clicks attack it can reach you as an sms/whatsapp/telegram message or even phone call from an unkown number can trigger such a vurlenbility that you have no control over [Usually state actors only can do such an attack] (https://citizenlab.ca/2021/09/forcedentry-nso-group-imessage-zero-click-exploit-captured-in-the-wild/)
+
+* Follow these guidelines to avoid a rootkit being installed on your Mac (computer) for non-zero clicks attacks cases :
+
+- Don’t leave your Mac unattended in a public place. If you’re staying in a hotel, lock it in the safe when you’re out of the room.
+- Don’t click on a link in an email or instant message unless you are 100% sure it’s safe.
+- Don’t download attachments in email messages unless you know what they are.
+- Don’t click on links in pop-up adverts that tell you Flash Player or any other piece of software is out of date.
+- Keep your operating system up to date.
+- Don’t ignore warnings from your web browser when it tells you a website you are trying to visit is unsafe. 
+
+
+
+
+
 ##### PROTIP: When the keyboard and mouse are not responsive, hold down the start (power) button for a hard reset.
-
-
-## While pressing the power/start:
+# startup-options
 
 * Hold down C to boot from CD.
 * Hold down N to boot from network (do a NetBoot from a network server/internet).
 * Hold down option (alt) key for the Mac's Startup Manager to select a (USB/memorycard) startup disk.
 * Hold down shift key to boot in Safe Mode (which does not load start-up items).
-* Hold down ⌘ (command) + R for the [Recovery menu](#recovery-menu).
-* hold down option (alt) + R for recovery from internet (downlaoded over http)
+* Hold down ⌘ (command) +  R for built-in macOS the [Recovery menu](#recovery-menu).
+  |- Use this key combination to reinstall the latest macOS that was installed on your system, or to use the other apps in macOS Recovery.
+* hold down option (alt) + R for Start up from macOS Recovery over the internet (downlaoded over http)
+  |- Use this key combination to reinstall macOS and upgrade to the latest version of macOS that’s compatible with your Mac.
+* hold down option (alt) + Shift + R for Start up from macOS Recovery over the internet (downlaoded over http)
+  |- Use this key combination to reinstall the version of macOS that came with your Mac or the closest version that’s still available.
 * Hold down ⌘ (command) + option + P + R to reset Parameter RAM (PRAM/NVRAM). You'll need to provide your network password again.
-* Hold down control + option + shift + power button to reset SMC.
+* Hold down  control + option + shift + power button to reset SMC. (7 seconds )
 * After powering up your Mac, a folder with a question mark means that a boot folder (described below) was not found on the hard disk.
 
+Also, check this for official mac [startup-options](https://support.apple.com/en-ca/guide/mac-help/mchl338cf9a8/mac)
 ## If pressing the start button does not work:
 
 * Unplug the power cable.
@@ -178,7 +340,7 @@ MacOS does not use the GRUB boot loader other Linux machines store in the /boot 
 * Third-party extensions are in
 /Library/Extensions/
 
-See Apple’s [The Early Boot Process](https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/KernelProgramming/booting/booting.html)
+also, See Apple’s [The Early Boot Process](https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/KernelProgramming/booting/booting.html)
 
 
 ## Bootable from CD
@@ -259,157 +421,8 @@ session    required       pam_uwtmp.so
 session    optional       pam_mount.so
 Each operating sytem has its own set, including use of file pam_env.conf within folder /etc/security.
 
-# Root Kits
-As its name suggests, a rootkit is a set of tools that are installed at root level on a computer, with the purpose of hacking into the system, causing damage or stealing data. Rootkits come in different types, and attack Macs as well as PCs.
-
-Root level gives highest administrator privileges on a computer. 
-
-## Types of rootkit
-
-### Hardware or firmware rootkit (Firmkit)
-
-These are installed in the system BIOS of a computer, or in the firmware of a network router. They can be used to intercept data on a disk or transmitted over a network. One example of such firmware is Thunderstrike, discovered in 2014. This malware exploited the Mac’s Thunderbolt port to install code and could install malware on the ROM EFI boot chip on Macs. It was difficult to detect and, once in place, could steal data or spy on activity.
-
-### Bootloader rootkit (bootkit)
-
-The bootloader is the part of the system that loads the operating system when a computer starts up. A bootloader replaces the real bootloader, meaning the malware is activated before the computer has started up.
-
-### Kernel mode rootkit (rootkit)
-The kernel is the core of your Mac's operating system. Based on Unix, it’s the software that makes everything else, including macOS, possible. A Kernel rootkit attacks that software and changes it. By doing that, a hacker can do pretty much anything they want, including spying on you, stealing your data, or locking you out of your Mac altogether.
 
 
-Leak of documents from CIA’s Embedded Development Branch (EDB) reveal they developed an OS X “implant” (called DerStarke) that includes a kernel code injection module dubbed Bokor and an EFI (Extensible Firmware Interface) persistence module (called DarkMatter). The rootkits targeting firmware on Apple Macbook laptops*
-
-The low-level firmware runs before the operating system and initializes the various hardware components during the system boot process. That allows the rootkit to survive major system updates and even reinstallations.
-
-A module for Intel Security’s CHIPSEC open-source framework finds rogue EFI binaries. [CHIPSEC](https://github.com/chipsec/chipsec.git) is a set of command-line tools which use low-level interfaces to analyze a system’s hardware, firmware, and platform components. It can be run from Windows, Linux, macOS, or an EFI shell. The new CHIPSEC module allows the user to take a clean EFI image immediately after purchase from the computer manufacturer, extract its contents and build a clean list of the binary files inside. It can then compare that list against the system’s current EFI or against an EFI image previously extracted from a system. If the tool finds any binary files that don’t match the clean EFI list, it’s possible that the firmware has been infected. The rogue files are listed and can then be further analyzed.
-
-See https://support.apple.com/en-us/HT201518
-
-## How to avoid a rootkit
-There are three ways a rootkit/excalating of privilage attacks can find its way onto your Mac (like other OS): 
-1. over a network like the internet (remotley) (clickable), (you can avoid) (anyone can do it)
-2. via an external peripheral (plugable/Nearby device a.k.a Evil Maid attack), (you can avoid) (anyone can do it)
-3. over any attack vector (nearby and/or remote) (zero-clicks), (you can't avoid) (only government agencies and maybe Huge Mafies)
-
-* For example [Thunderstrike](https://lowendmac.com/2018/thunderstrike-malware-could-it-still-be-a-threat-to-your-mac/) used the latter mode – a device connected to the Thunderbolt port on a target Mac could exploit the firmware in the port and install malware. However, most such malware uses usb peripherils which can come in many different looks like a memory stick , mouse/keyboard or even a Phone charger like [Hak5 usb charging cable](https://shop.hak5.org/products/o-mg-cable-usb-a) ,  howver there's another way to root and control/transfer such a malware/attack/hack which's over the internet or in somecases like [Pegasus](https://info.lookout.com/rs/051-ESQ-475/images/lookout-pegasus-technical-analysis.pdf) zero clicks attack it can reach you as an sms/whatsapp/telegram message or even phone call from an unkown number can trigger such a vurlenbility that you have no control over [Usually state actors only can do such an attack] (https://citizenlab.ca/2021/09/forcedentry-nso-group-imessage-zero-click-exploit-captured-in-the-wild/)
-
-* Follow these guidelines to avoid a rootkit being installed on your Mac (computer) for non-zero clicks attacks cases :
-
-- Don’t leave your Mac unattended in a public place. If you’re staying in a hotel, lock it in the safe when you’re out of the room.
-- Don’t click on a link in an email or instant message unless you are 100% sure it’s safe.
-- Don’t download attachments in email messages unless you know what they are.
-- Don’t click on links in pop-up adverts that tell you Flash Player or any other piece of software is out of date.
-- Keep your operating system up to date.
-- Don’t ignore warnings from your web browser when it tells you a website you are trying to visit is unsafe. 
-
-
-
-
-
-# Guide to pre/post-instal Secure Mac (OSX)
-
-This guide is a collection of techniques for improving the security and privacy of a modern Apple Macintosh computer ("MacBook") running a recent version of macOS (formerly known as "OS X").
-
-This guide is targeted to power users who wish to adopt enterprise-standard security, but is also suitable for novice users with an interest in improving their privacy and security on a Mac.
-
-A system is only as secure as its administrator is capable of making it. There is no one single technology, software, nor technique to guarantee perfect computer security; a modern operating system and computer is very complex, and requires numerous incremental changes to meaningfully improve one's security and privacy posture.
-
-This guide is provided on an 'as is' basis without any warranties of any kind. Only **you** are responsible if you break anything or get in any sort of trouble by following this guide.
-
-To suggest an improvement, please send a pull request or [open an issue](https://github.com/drduh/macOS-Security-and-Privacy-Guide/issues).
-
-This guide is also available in [简体中文](https://github.com/drduh/macOS-Security-and-Privacy-Guide/blob/master/README-cn.md).
-
-- [Basics](#basics)
-- [Preparing and installing macOS](#preparing-and-installing-macos)
-  * [Verifying installation integrity](#verifying-installation-integrity)
-  * [Creating a bootable USB installer](#creating-a-bootable-usb-installer)
-  * [Creating an install image](#creating-an-install-image)
-    + [Manual way](#manual-way)
-  * [Target disk mode](#target-disk-mode)
-  * [Creating a recovery partition](#creating-a-recovery-partition)
-  * [Virtualization](#virtualization)
-- [First boot](#first-boot)
-- [System activation](#system-activation)
-- [Admin and standard user accounts](#admin-and-standard-user-accounts)
-  * [Caveats](#caveats)
-  * [Setup](#setup)
-- [Full disk encryption](#full-disk-encryption)
-- [Firmware](#firmware)
-- [Firewall](#firewall)
-  * [Application layer firewall](#application-layer-firewall)
-  * [Third party firewalls](#third-party-firewalls)
-  * [Kernel level packet filtering](#kernel-level-packet-filtering)
-- [Services](#services)
-- [Spotlight Suggestions](#spotlight-suggestions)
-- [Homebrew](#homebrew)
-- [DNS](#dns)
-    + [Hosts file](#hosts-file)
-    + [dnscrypt](#dnscrypt)
-    + [Dnsmasq](#dnsmasq)
-      - [Test DNSSEC validation](#test-dnssec-validation)
-- [Captive portal](#captive-portal)
-- [Certificate authorities](#certificate-authorities)
-- [OpenSSL](#openssl)
-- [Curl](#curl)
-- [Web](#web)
-  * [Privoxy](#privoxy)
-  * [Browser](#browser)
-    + [Firefox](#firefox)
-    + [Chrome](#chrome)
-    + [Safari](#safari)
-    + [Other Web browsers](#other-web-browsers)
-    + [Web browsers and privacy](#web-browsers-and-privacy)
-  * [Plugins](#plugins)
-- [Tor](#tor)
-- [VPN](#vpn)
-- [PGP/GPG](#pgpgpg)
-- [OTR](#otr)
-- [Viruses and malware](#viruses-and-malware)
-- [System Integrity Protection](#system-integrity-protection)
-- [Gatekeeper and XProtect](#gatekeeper-and-xprotect)
-- [Metadata and artifacts](#metadata-and-artifacts)
-- [Passwords](#passwords)
-- [Backup](#backup)
-- [Wi-Fi](#wi-fi)
-- [SSH](#ssh)
-- [Physical access](#physical-access)
-- [System monitoring](#system-monitoring)
-  * [OpenBSM audit](#openbsm-audit)
-  * [DTrace](#dtrace)
-  * [Execution](#execution)
-  * [Network](#network)
-- [Binary Whitelisting](#binary-whitelisting)
-- [Miscellaneous](#miscellaneous)
-- [Related software](#related-software)
-- [Additional resources](#additional-resources)
-
-## Basics
-
-Standard security best practices apply:
-
-* Create a [threat model](https://www.owasp.org/index.php/Application_Threat_Modeling)
-	* What are you trying to protect and from whom? Is your adversary a [three letter agency](https://theintercept.com/document/2015/03/10/strawhorse-attacking-macos-ios-software-development-kit/) (if so, you may want to consider using [OpenBSD](https://www.openbsd.org/) instead); a nosy eavesdropper on the network; or a determined [apt](https://en.wikipedia.org/wiki/Advanced_persistent_threat) orchestrating a campaign against you?
-	* [Recognize threats](https://www.usenix.org/system/files/1401_08-12_mickens.pdf) and how to reduce attack surface against them.
-
-* Keep the system up to date
-	* Patch the base operating system and all third party software.
-	* macOS system updates can be completed using the App Store application, or the `softwareupdate` command-line utility - neither requires registering an Apple account. Updates can also be downloaded directly from Apple's support site.
-	* Subscribe to announcement mailing lists like [Apple security-announce](https://lists.apple.com/mailman/listinfo/security-announce).
-
-* Encrypt sensitive data at rest
-	* In addition to full disk encryption, consider creating one or several encrypted partitions or volumes to store passwords, cryptographic keys, personal documents, etc. at rest.
-	* This will mitigate damage in case of compromise and data theft.
-
-* Assure data availability
-	* Create [regular backups](https://www.amazon.com/o/ASIN/0596102461/backupcentral) of your data and be ready to format and re-install the operating system in case of compromise.
-	* Always encrypt locally before copying backups to external media or the "cloud".
-	* Verify backups work by testing them regularly, for example by accessing certain files or performing a hash based comparison.
-
-* Click carefully
-	* Ultimately, the security of a system can be reduced to its administrator.
-	* Care should be taken when installing new software. Always prefer [free](https://www.gnu.org/philosophy/free-sw.en.html) and open source software ([which macOS is not](https://superuser.com/questions/19492/is-mac-os-x-open-source)).
 
 ## Preparing and installing macOS
 
